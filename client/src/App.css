@@ -1,23 +1,24 @@
 /* ------------------------------------------------------------------ */
-/*  Faculty Management System — Liquid Glass / Plasma Aurora theme    */
+/*  Faculty Management System — Warm Sunset / Espresso Glass theme    */
 /*  Pure CSS. No API, route, role-gating or data-flow changes here.    */
 /*  Readability rule: panels are DARK-tinted glass (not pale glass),   */
 /*  so near-white text stays high-contrast over the moving backdrop.   */
 /*                                                                    */
-/*  PALETTE (design-polish pass, Oct 2026)                            */
-/*  --bg            #0a0f2a  Deep navy/indigo base (was flat #050510) */
+/*  PALETTE (recolor pass, Oct 2026 — warm sunset direction,      */
+/*  chosen to replace the previous cool-toned palette entirely)       */
+/*  --bg            #171210  Warm espresso near-black base            */
 /*                   Page background, aurora layer, modal scrim tint. */
-/*  --card          rgba(24,30,68,0.60)  Indigo-tinted glass panels    */
+/*                   Body gradient runs #241b15 -> #171210 -> #100c09 */
+/*  --card          rgba(43,33,26,0.60)  Warm brown-tinted glass      */
 /*                   Cards, tables, stat cards, login card.           */
-/*  --sidebar       rgba(11,15,43,0.68)  Darker indigo-navy glass      */
+/*  --sidebar       rgba(28,21,17,0.68)  Darker espresso glass        */
 /*                   Sidebar only (deeper than cards, for hierarchy).*/
-/*  --text          #f2f5fa  Near-white body text (on dark glass).    */
-/*  --muted         #c0cadb  Softer secondary text (labels, hints).   */
-/*  --border        rgba(165,180,252,0.20)  Indigo-tinted card borders*/
-/*  Cool flow (aurora, headings, brand, nav-active, focus, info):     */
-/*    violet #7c3aed / #818cf8 / #6366f1, blue #2563eb / #60a5fa,     */
-/*    cyan #06b6d4 / #67e8f9. Pink #ec4899 is now a minor accent      */
-/*    only (small blob, 0.20 opacity) — never a main flow colour.     */
+/*  --text          #faf7f2  Warm near-white body text (on dark glass)*/
+/*  --muted         #d6cdbd  Softer warm secondary text (labels, hints)*/
+/*  --border        rgba(251,191,36,0.20)  Gold-tinted card borders   */
+/*  Sunset flow (aurora, headings, brand, nav-active, stat bar):      */
+/*    amber #f59e0b, burnt orange #ea580c, coral orange #f97316,     */
+/*    light orange #fb923c (minor blob only, 0.20 opacity).           */
 /*  --accent (warm) #fbbf24 gold, deep #f59e0b — SOLID fills ONLY:    */
 /*                   primary buttons + key numbers (stat values).    */
 /*                   Never used for a status tint or badge.           */
@@ -29,14 +30,18 @@
 /*      ONLY as a tinted badge/alert, accent ONLY as a solid fill.    */
 /*    danger  #f87171 / #dc2626 (text #fecaca on dark red tint;       */
 /*      conflict box keeps its dark-red banner + red left bar)        */
-/*    info    #60a5fa (text #bfdbfe on dark blue tint)                */
-/*  Focus rings stay cool indigo (#c7d2fe), never gold, so keyboard   */
-/*  focus is always distinguishable from a gold primary action.       */
+/*    info    warm neutral #e7e5e4 (on warm stone tint rgba(41,37,36))*/
+/*      with border rgba(214,211,209,0.55);                          */
+/*      info is a neutral tint, clearly distinct from gold accent     */
+/*      (solid fill) and orange warning (orange tint).                */
+/*  Focus rings are coral orange #f97316 with a white #ffffff         */
+/*  focus-visible outline, never gold, so keyboard focus is always    */
+/*  distinguishable from a gold primary action.                       */
 /* ------------------------------------------------------------------ */
 
 :root {
-  --primary: #818cf8;
-  --primary-dark: #6366f1;
+  --primary: #fbbf24;
+  --primary-dark: #ea580c;
   --accent: #fbbf24;
   --accent-deep: #f59e0b;
   --accent-text: #201503;
@@ -44,16 +49,16 @@
   --danger-dark: #dc2626;
   --success: #4ade80;
   --warning: #fb923c;
-  --info: #60a5fa;
-  --bg: #0a0f2a;
-  --card: rgba(24, 30, 68, 0.60);
-  --text: #f2f5fa;
-  --muted: #c0cadb;
-  --border: rgba(165, 180, 252, 0.20);
-  --sidebar: rgba(11, 15, 43, 0.68);
-  --sidebar-text: #cbd5e1;
-  --glass-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.30), 0 0 24px rgba(99, 102, 241, 0.10);
-  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(165, 180, 252, 0.06);
+  --info: #d6d3d1;
+  --bg: #171210;
+  --card: rgba(43, 33, 26, 0.60);
+  --text: #faf7f2;
+  --muted: #d6cdbd;
+  --border: rgba(251, 191, 36, 0.20);
+  --sidebar: rgba(28, 21, 17, 0.68);
+  --sidebar-text: #e8ddd0;
+  --glass-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.30), 0 0 24px rgba(245, 158, 11, 0.10);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(251, 191, 36, 0.06);
   color-scheme: dark;
 }
 
@@ -65,16 +70,16 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background:
-    radial-gradient(1200px 700px at 85% -10%, rgba(124, 58, 237, 0.24), transparent 60%),
-    radial-gradient(900px 600px at -10% 110%, rgba(6, 182, 212, 0.18), transparent 60%),
-    linear-gradient(180deg, #0d1336 0%, var(--bg) 45%, #080b22 100%);
+    radial-gradient(1200px 700px at 85% -10%, rgba(245, 158, 11, 0.24), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(234, 88, 12, 0.18), transparent 60%),
+    linear-gradient(180deg, #241b15 0%, var(--bg) 45%, #100c09 100%);
   background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---------------- Plasma / aurora background ---------------------- */
+/* ---------------- Sunset / aurora background ---------------------- */
 /* Fixed layer behind everything. Animation uses transform + opacity  */
 /* only (GPU-friendly); the blur is static on each blob, never        */
 /* animated, so it costs nothing per frame.                           */
@@ -95,24 +100,24 @@ body {
 }
 .aurora-blob-1 {
   width: 52vw; height: 52vw; left: -12vw; top: -16vw;
-  background: radial-gradient(circle at 40% 40%, #7c3aed, transparent 70%);
+  background: radial-gradient(circle at 40% 40%, #f59e0b, transparent 70%);
   animation: aurora-drift-1 32s ease-in-out infinite alternate;
 }
 .aurora-blob-2 {
   width: 44vw; height: 44vw; right: -10vw; top: 8vh;
-  background: radial-gradient(circle at 50% 50%, #2563eb, transparent 70%);
+  background: radial-gradient(circle at 50% 50%, #ea580c, transparent 70%);
   opacity: 0.42;
   animation: aurora-drift-2 40s ease-in-out infinite alternate;
 }
 .aurora-blob-3 {
   width: 38vw; height: 38vw; left: 30vw; bottom: -18vw;
-  background: radial-gradient(circle at 50% 50%, #06b6d4, transparent 70%);
+  background: radial-gradient(circle at 50% 50%, #f97316, transparent 70%);
   opacity: 0.48;
   animation: aurora-drift-1 36s ease-in-out infinite alternate-reverse;
 }
 .aurora-blob-4 {
   width: 24vw; height: 24vw; right: 22vw; bottom: 12vh;
-  background: radial-gradient(circle at 50% 50%, #ec4899, transparent 70%);
+  background: radial-gradient(circle at 50% 50%, #fb923c, transparent 70%);
   opacity: 0.20;
   animation: aurora-drift-2 28s ease-in-out infinite alternate-reverse;
 }
@@ -134,13 +139,13 @@ h1 {
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0 0 0.5rem;
-  background: linear-gradient(90deg, #ffffff 0%, #c7d2fe 45%, #67e8f9 100%);
+  background: linear-gradient(90deg, #ffffff 0%, #fde68a 45%, #fdba74 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
-h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #eef2ff; letter-spacing: -0.01em; }
+h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #fff7ed; letter-spacing: -0.01em; }
 .muted { color: var(--muted); }
 .small { font-size: 0.85rem; }
 
@@ -182,7 +187,7 @@ h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #eef2ff; letter-spacin
 .brand { padding: 0.5rem 0.5rem 1.25rem; border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
 .brand-title {
   font-size: 1.85rem; font-weight: 800; letter-spacing: 1px;
-  background: linear-gradient(90deg, #ffffff, #a5b4fc 55%, #67e8f9);
+  background: linear-gradient(90deg, #ffffff, #fcd34d 55%, #fdba74);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent; color: transparent;
 }
@@ -198,13 +203,13 @@ h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #eef2ff; letter-spacin
   border: 1px solid transparent;
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
-.nav-link:hover { background: rgba(165, 180, 252, 0.12); color: #fff; transform: translateX(2px); }
+.nav-link:hover { background: rgba(251, 191, 36, 0.12); color: #fff; transform: translateX(2px); }
 .nav-link:active { transform: translateX(1px) scale(0.99); }
 .nav-link.active {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.85), rgba(168, 85, 247, 0.75));
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.85), rgba(249, 115, 22, 0.75));
   color: #fff;
   border-color: rgba(255, 255, 255, 0.22);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 6px 20px rgba(234, 88, 12, 0.35);
 }
 .sidebar-footer { margin-top: auto; }
 .user-box { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.75rem 0.5rem; }
@@ -221,7 +226,7 @@ h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #eef2ff; letter-spacin
   margin: 1rem 0;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.card:hover { transform: translateY(-2px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), 0 0 28px rgba(99, 102, 241, 0.14), var(--glass-inset); }
+.card:hover { transform: translateY(-2px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), 0 0 28px rgba(245, 158, 11, 0.14), var(--glass-inset); }
 .card h2 { margin-top: 0; }
 .form-grid {
   display: grid;
@@ -229,7 +234,7 @@ h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #eef2ff; letter-spacin
   gap: 0.75rem;
 }
 .form-grid .full { grid-column: 1 / -1; }
-label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; font-weight: 500; color: #e2e8f0; }
+label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; font-weight: 500; color: #ede6da; }
 input, select {
   padding: 0.6rem 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.20);
@@ -239,14 +244,14 @@ input, select {
   color: var(--text);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-input::placeholder { color: #94a3b8; }
+input::placeholder { color: #a8a29e; }
 input:focus, select:focus {
   outline: none;
-  border-color: #a5b4fc;
+  border-color: #f97316;
   background: rgba(255, 255, 255, 0.11);
-  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.35);
 }
-select option { background: #131a3d; color: #f2f5fa; }
+select option { background: #2b211a; color: #faf7f2; }
 
 /* ---------------- Buttons ----------------------------------------- */
 .btn {
@@ -271,7 +276,7 @@ select option { background: #131a3d; color: #f2f5fa; }
 .btn-primary:active { transform: translateY(1px) scale(0.99); filter: brightness(0.97); }
 .btn-primary:disabled { opacity: 0.65; cursor: default; transform: none; box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25); }
 .btn-danger {
-  background: linear-gradient(135deg, #ef4444, #be123c);
+  background: linear-gradient(135deg, #dc2626, #be123c);
   color: #fff;
   box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
@@ -285,7 +290,7 @@ select option { background: #131a3d; color: #f2f5fa; }
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
-.btn-outline:hover { background: rgba(165, 180, 252, 0.14); transform: translateY(-1px); }
+.btn-outline:hover { background: rgba(251, 191, 36, 0.14); transform: translateY(-1px); }
 .btn-outline:active { transform: translateY(1px) scale(0.99); }
 .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.85rem; border-radius: 10px; }
 .btn-block { width: 100%; align-self: stretch; }
@@ -300,9 +305,9 @@ select option { background: #131a3d; color: #f2f5fa; }
   font-size: 0.92rem;
 }
 .table th, .table td { padding: 0.7rem 0.85rem; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.10); color: var(--text); }
-.table th { background: rgba(255, 255, 255, 0.09); font-weight: 600; color: #e2e8f0; letter-spacing: 0.01em; }
+.table th { background: rgba(255, 255, 255, 0.09); font-weight: 600; color: #ede6da; letter-spacing: 0.01em; }
 .table tbody tr { transition: background 0.2s ease; }
-.table tbody tr:hover { background: rgba(165, 180, 252, 0.08); }
+.table tbody tr:hover { background: rgba(251, 191, 36, 0.08); }
 .table tbody tr:last-child td { border-bottom: none; }
 
 /* ---------------- Stats ------------------------------------------- */
@@ -322,9 +327,9 @@ select option { background: #131a3d; color: #f2f5fa; }
 .stat-card::before {
   content: '';
   position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-  background: linear-gradient(180deg, #818cf8, #22d3ee);
+  background: linear-gradient(180deg, #fbbf24, #f97316);
 }
-.stat-card:hover { transform: translateY(-3px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), 0 0 28px rgba(99, 102, 241, 0.14), var(--glass-inset); }
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), 0 0 28px rgba(245, 158, 11, 0.14), var(--glass-inset); }
 .stat-value { font-size: 1.9rem; font-weight: 800; color: #fbbf24; letter-spacing: -0.02em; }
 .stat-label { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
 
@@ -353,9 +358,9 @@ select option { background: #131a3d; color: #f2f5fa; }
   box-shadow: 0 4px 18px rgba(234, 88, 12, 0.22);
 }
 .alert.info {
-  background: rgba(12, 32, 66, 0.78);
-  color: #bfdbfe;
-  border: 1px solid rgba(96, 165, 250, 0.55);
+  background: rgba(41, 37, 36, 0.78);
+  color: #e7e5e4;
+  border: 1px solid rgba(214, 211, 209, 0.55);
 }
 .conflict-box {
   background: rgba(69, 10, 10, 0.82);
@@ -381,7 +386,7 @@ select option { background: #131a3d; color: #f2f5fa; }
 .badge-present, .badge-approved { background: rgba(22, 101, 52, 0.55); color: #bbf7d0; border-color: rgba(74, 222, 128, 0.45); }
 .badge-absent, .badge-rejected { background: rgba(127, 29, 29, 0.55); color: #fecaca; border-color: rgba(248, 113, 113, 0.45); }
 .badge-pending { background: rgba(62, 32, 5, 0.55); color: #fdba74; border-color: rgba(251, 146, 60, 0.50); }
-.badge-leave, .badge-half-day { background: rgba(30, 58, 138, 0.55); color: #bfdbfe; border-color: rgba(96, 165, 250, 0.45); }
+.badge-leave, .badge-half-day { background: rgba(41, 37, 36, 0.55); color: #e7e5e4; border-color: rgba(214, 211, 209, 0.45); }
 .filter-row { display: flex; gap: 1rem; align-items: flex-end; margin: 1rem 0 0; flex-wrap: wrap; }
 .review-box { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
 .review-box input { width: 130px; }
@@ -390,7 +395,7 @@ select option { background: #131a3d; color: #f2f5fa; }
 .modal-overlay {
   position: fixed; inset: 0; z-index: 50;
   display: flex; align-items: center; justify-content: center; padding: 1rem;
-  background: rgba(7, 10, 34, 0.62);
+  background: rgba(16, 12, 9, 0.62);
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
 .modal-card { border-radius: 20px; padding: 1.75rem; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
@@ -424,9 +429,9 @@ select option { background: #131a3d; color: #f2f5fa; }
   color: var(--text);
   transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
-.demo-btn:hover { border-color: #a5b4fc; background: rgba(165, 180, 252, 0.12); transform: translateY(-1px); }
+.demo-btn:hover { border-color: #f97316; background: rgba(251, 191, 36, 0.12); transform: translateY(-1px); }
 .demo-btn:active { transform: translateY(1px) scale(0.99); }
-code { background: rgba(255, 255, 255, 0.12); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85rem; color: #e2e8f0; }
+code { background: rgba(255, 255, 255, 0.12); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85rem; color: #ede6da; }
 
 @media (max-width: 700px) {
   .layout { flex-direction: column; }
@@ -441,7 +446,7 @@ code { background: rgba(255, 255, 255, 0.12); padding: 0.1rem 0.35rem; border-ra
 
 /* ------------------------------------------------------------------ */
 /*  Polish pass (Oct 2026) — same identity, refined, not replaced.    */
-/*  Dark frosted glass + plasma gradient, with: tighter typography,   */
+/*  Dark frosted glass + sunset glow, with: tighter typography,   */
 /*  calmer spacing, softer hover/focus, spinner + empty states.       */
 /*  Performance: transform/opacity/border-color only in transitions;  */
 /*  no animated blur, no layout-shifting hover. Text stays on dark    */
@@ -449,8 +454,8 @@ code { background: rgba(255, 255, 255, 0.12); padding: 0.1rem 0.35rem; border-ra
 /* ------------------------------------------------------------------ */
 
 :root {
-  --text: #f2f5fa;
-  --muted: #c0cadb;
+  --text: #faf7f2;
+  --muted: #d6cdbd;
   --radius: 20px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -476,9 +481,9 @@ h2 { font-size: 1.2rem; font-weight: 700; margin: 1.75rem 0 0.85rem; }
 /* Visible keyboard focus — distinct from mouse hover, never removed. */
 .btn:focus-visible, .nav-link:focus-visible, .demo-btn:focus-visible,
 input:focus-visible, select:focus-visible, a:focus-visible {
-  outline: 2px solid #c7d2fe;
+  outline: 2px solid #fde68a;
   outline-offset: 3px;
-  box-shadow: 0 0 0 5px rgba(129, 140, 248, 0.30);
+  box-shadow: 0 0 0 5px rgba(249, 115, 22, 0.30);
 }
 
 /* Buttons: inline-flex so spinner + label align; disabled stays legible. */
@@ -489,7 +494,7 @@ input:focus-visible, select:focus-visible, a:focus-visible {
 /* Forms: roomier fields, clearer labels, steadier focus ring. */
 label { gap: 0.45rem; font-weight: 600; }
 input, select { padding: 0.7rem 0.85rem; border-radius: 14px; }
-input:focus, select:focus { box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35), 0 0 0 1px rgba(165, 180, 252, 0.6); }
+input:focus, select:focus { box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.35), 0 0 0 1px rgba(249, 115, 22, 0.6); }
 .form { gap: 0.9rem; }
 .form-grid { gap: 0.9rem; }
 
@@ -497,15 +502,15 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35), 0 0
    rows, and a softer hover that never washes text out. */
 .table { border-radius: var(--radius); }
 .table th {
-  background: rgba(165, 180, 252, 0.11);
+  background: rgba(251, 191, 36, 0.11);
   font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #e2e8f0;
+  color: #ede6da;
   padding: 0.8rem 0.9rem;
 }
 .table td { padding: 0.8rem 0.9rem; }
-.table tbody tr:hover { background: rgba(165, 180, 252, 0.08); }
+.table tbody tr:hover { background: rgba(251, 191, 36, 0.08); }
 
 /* Sidebar: active link gets a left glow bar; nav is easier to scan. */
 .nav-link { position: relative; padding: 0.7rem 0.9rem; border-radius: 14px; }
@@ -513,8 +518,8 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35), 0 0
   content: '';
   position: absolute; left: -1rem; top: 22%; bottom: 22%; width: 3px;
   border-radius: 3px;
-  background: linear-gradient(180deg, #a5b4fc, #67e8f9);
-  box-shadow: 0 0 12px rgba(129, 140, 248, 0.8);
+  background: linear-gradient(180deg, #fcd34d, #fdba74);
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.8);
 }
 .brand-title { letter-spacing: 2px; }
 .user-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 14px; margin-bottom: 0.75rem; }
@@ -537,7 +542,7 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35), 0 0
   width: 22px; height: 22px; flex: none;
   border-radius: 50%;
   border: 2.5px solid rgba(255, 255, 255, 0.18);
-  border-top-color: #a5b4fc;
+  border-top-color: #f97316;
   animation: spin 0.8s linear infinite;
 }
 .spinner-sm { width: 16px; height: 16px; border-width: 2px; }
@@ -551,21 +556,21 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35), 0 0
   background: rgba(255, 255, 255, 0.04);
 }
 .empty-state p { margin: 0.25rem 0; }
-.empty-state p:first-child { color: #e2e8f0; font-weight: 600; }
+.empty-state p:first-child { color: #ede6da; font-weight: 600; }
 
 /* Login: gradient-ring card, centred mark, calmer demo list. */
 .login-card {
   padding: 2.5rem 2.5rem 2.25rem;
   position: relative;
   border-radius: 24px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(165, 180, 252, 0.18), var(--glass-inset);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(251, 191, 36, 0.18), var(--glass-inset);
 }
 .login-mark {
   width: 56px; height: 56px; border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
   font-size: 1.05rem; font-weight: 800; letter-spacing: 1.5px; color: #fff;
-  background: linear-gradient(135deg, #6366f1, #a855f7 55%, #06b6d4);
-  box-shadow: 0 10px 28px rgba(139, 92, 246, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: linear-gradient(135deg, #ea580c, #f97316 55%, #f97316);
+  box-shadow: 0 10px 28px rgba(234, 88, 12, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   margin-bottom: 1.25rem;
 }
 .login-card h1 { font-size: 1.65rem; }
