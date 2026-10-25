@@ -17,6 +17,13 @@ export default function Timetable() {
   const [conflicts, setConflicts] = useState([])
   const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(true)
+  const [facultyLoading, setFacultyLoading] = useState(true)
+  const [deptsLoading, setDeptsLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+  // Two-step in-app delete confirmation (see Faculty.jsx): first click
+  // arms the row's button, second click fires the DELETE call. No
+  // native browser confirm dialog, which auto-dismisses in automated browsers.
+  const [pendingDelete, setPendingDelete] = useState(null)
 
   function load(d) {
     setLoading(true)
@@ -35,8 +42,16 @@ export default function Timetable() {
   useEffect(() => {
     load('')
     loadBlocked()
-    api('/faculty').then(setFaculty).catch(() => {})
-    api('/departments').then(setDepartments).catch(() => {})
+    setFacultyLoading(true)
+    api('/faculty')
+      .then(setFaculty)
+      .catch((err) => setLoadError((prev) => prev || `Could not load faculty: ${err.message}`))
+      .finally(() => setFacultyLoading(false))
+    setDeptsLoading(true)
+    api('/departments')
+      .then(setDepartments)
+      .catch((err) => setLoadError((prev) => prev || `Could not load departments: ${err.message}`))
+      .finally(() => setDeptsLoading(false))
   }, [])
 
   function changeDay(d) {
@@ -68,9 +83,16 @@ export default function Timetable() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this timetable entry?')) return
+    if (pendingDelete !== id) {
+      setError('')
+      setNotice('')
+      setPendingDelete(id)
+      return
+    }
+    setPendingDelete(null)
     try {
       await api(`/timetable/${id}`, { method: 'DELETE' })
+      setNotice('Timetable entry deleted.')
       load(day)
     } catch (err) {
       setError(err.message)
@@ -92,7 +114,9 @@ export default function Timetable() {
             <label>Subject<input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} required /></label>
             <label>Faculty
               <select value={form.faculty} onChange={(e) => setForm({ ...form, faculty: e.target.value })} required>
-                <option value="">Select faculty</option>
+                {facultyLoading
+                  ? <option value="" disabled>Loading…</option>
+                  : <option value="">Select faculty</option>}
                 {faculty.map((f) => (
                   <option key={f._id} value={f._id}>{f.facultyId} — {f.user ? f.user.name : ''}</option>
                 ))}
@@ -103,13 +127,16 @@ export default function Timetable() {
             <label>End time<input type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} required /></label>
             <label>Department
               <select value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} required>
-                <option value="">Select department</option>
+                {deptsLoading
+                  ? <option value="" disabled>Loading…</option>
+                  : <option value="">Select department</option>}
                 {departments.map((d) => <option key={d._id} value={d._id}>{d.name} ({d.code})</option>)}
               </select>
             </label>
             <label>Semester<input value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })} required placeholder="5" /></label>
             <label>Section<input value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })} placeholder="A" /></label>
           </div>
+          {loadError && <div className="alert error">{loadError}</div>}
           {error && <div className="alert error">{error}</div>}
           {conflicts.length > 0 && (
             <div className="conflict-box">
@@ -152,7 +179,18 @@ export default function Timetable() {
                 <td>{r.startTime} – {r.endTime}</td>
                 <td>{r.department ? `${r.department.name} (${r.department.code})` : '—'}</td>
                 <td>{r.semester}{r.section ? ` / ${r.section}` : ''}</td>
-                {canManage && <td><button className="btn btn-danger btn-sm" onClick={() => handleDelete(r._id)}>Delete</button></td>}
+                {canManage && (
+                  <td>
+                    {pendingDelete === r._id ? (
+                      <>
+                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(r._id)}>Confirm delete?</button>{' '}
+                        <button className="btn btn-sm" onClick={() => setPendingDelete(null)}>Cancel</button>
+                      </>
+                    ) : (
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(r._id)}>Delete</button>
+                    )}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

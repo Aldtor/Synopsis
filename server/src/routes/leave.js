@@ -2,6 +2,7 @@ import express from 'express';
 import Leave from '../models/Leave.js';
 import Faculty from '../models/Faculty.js';
 import { protect, requireRole } from '../middleware/auth.js';
+import { friendlyValidationMessage } from '../utils/validation.js';
 
 const router = express.Router();
 router.use(protect);
@@ -37,8 +38,12 @@ router.post('/', async (req, res) => {
   if (new Date(toDate) < new Date(fromDate)) {
     return res.status(400).json({ message: 'toDate cannot be before fromDate' });
   }
-  const leave = await Leave.create({ faculty: facultyId, type, fromDate, toDate, reason });
-  res.status(201).json(await populate(Leave.findById(leave._id)));
+  try {
+    const leave = await Leave.create({ faculty: facultyId, type, fromDate, toDate, reason });
+    res.status(201).json(await populate(Leave.findById(leave._id)));
+  } catch (err) {
+    res.status(400).json({ message: friendlyValidationMessage(err) });
+  }
 });
 
 // Approve / reject a leave request (admin or the faculty member's HOD).
@@ -53,8 +58,12 @@ router.put('/:id/review', requireRole('admin', 'hod'), async (req, res) => {
   leave.status = status;
   leave.remarks = remarks || '';
   leave.reviewedBy = req.user._id;
-  await leave.save();
-  res.json(await populate(Leave.findById(leave._id)));
+  try {
+    await leave.save();
+    res.json(await populate(Leave.findById(leave._id)));
+  } catch (err) {
+    res.status(400).json({ message: friendlyValidationMessage(err) });
+  }
 });
 
 export default router;

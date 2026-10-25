@@ -3,6 +3,7 @@ import Timetable from '../models/Timetable.js';
 import ConflictLog from '../models/ConflictLog.js';
 import { protect, requireRole } from '../middleware/auth.js';
 import { findConflicts, describeConflict, logBlockedAttempt, toMinutes } from '../utils/conflict.js';
+import { friendlyValidationMessage } from '../utils/validation.js';
 
 const router = express.Router();
 router.use(protect);
@@ -62,7 +63,7 @@ router.post('/', requireRole('admin', 'hod'), async (req, res) => {
     const entry = await Timetable.create(req.body);
     res.status(201).json(await populate(Timetable.findById(entry._id)));
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ message: friendlyValidationMessage(err) });
   }
 });
 
@@ -77,7 +78,7 @@ router.put('/:id', requireRole('admin', 'hod'), async (req, res) => {
     await existing.save();
     res.json(await populate(Timetable.findById(existing._id)));
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ message: friendlyValidationMessage(err) });
   }
 });
 

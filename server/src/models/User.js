@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre('save', async function hashPassword(next) {
   if (!this.isModified('password')) return next();
+  // Skip values that are already bcrypt hashes (e.g. the seed reuses one
+  // pre-computed hash for all demo users). Re-hashing a hash would make
+  // the original password unverifiable. A bcrypt hash always starts
+  // with $2a$ / $2b$ / $2y$ followed by the cost, so this test is safe
+  // for genuine plaintext passwords.
+  if (/^\$2[aby]\$\d{2}\$/.test(this.password)) return next();
   this.password = await bcrypt.hash(this.password, 10);
   return next();
 });

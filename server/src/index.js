@@ -2,7 +2,6 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { connectDB } from './config/db.js';
-import User from './models/User.js';
 import { seed } from './seed.js';
 import authRoutes from './routes/auth.js';
 import departmentRoutes from './routes/departments.js';
@@ -39,10 +38,13 @@ if (process.env.NODE_ENV !== 'test') {
   // Only the HTTP listener is local-only — a Vercel serverless function
   // must never call app.listen(); Vercel invokes the exported app itself.
   await connectDB();
-  // First run: seed the fictional demo dataset from the synopsis methodology.
-  if ((await User.countDocuments()) === 0) {
-    await seed();
-  }
+  // Always run the idempotent, non-destructive seed ensure: it fills any
+  // gaps left by a timed-out partial run and is a fast no-op (a handful
+  // of reads) when the demo data is already complete. It never wipes
+  // existing data, so a partial live database heals on the next start
+  // instead of being stuck forever (the old "only when User count is 0"
+  // trigger never retried after a partial run).
+  await seed();
   if (!process.env.VERCEL) {
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
   }

@@ -2,6 +2,7 @@ import express from 'express';
 import Attendance from '../models/Attendance.js';
 import Faculty from '../models/Faculty.js';
 import { protect, requireRole } from '../middleware/auth.js';
+import { friendlyValidationMessage } from '../utils/validation.js';
 
 const router = express.Router();
 router.use(protect);
@@ -41,12 +42,16 @@ router.post('/', requireRole('admin', 'hod'), async (req, res) => {
   if (req.user.role === 'hod' && String(profile.department) !== String(req.user.department)) {
     return res.status(403).json({ message: 'Faculty belongs to another department' });
   }
-  const row = await Attendance.findOneAndUpdate(
-    { faculty, date: { $gte: dayStart(date), $lte: dayEnd(date) } },
-    { faculty, date: dayStart(date), status, remarks: remarks || '', markedBy: req.user._id },
-    { new: true, upsert: true, runValidators: true }
-  );
-  res.status(201).json(row);
+  try {
+    const row = await Attendance.findOneAndUpdate(
+      { faculty, date: { $gte: dayStart(date), $lte: dayEnd(date) } },
+      { faculty, date: dayStart(date), status, remarks: remarks || '', markedBy: req.user._id },
+      { new: true, upsert: true, runValidators: true }
+    );
+    res.status(201).json(row);
+  } catch (err) {
+    res.status(400).json({ message: friendlyValidationMessage(err) });
+  }
 });
 
 export default router;

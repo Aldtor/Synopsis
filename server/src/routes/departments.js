@@ -2,6 +2,7 @@ import express from 'express';
 import Department from '../models/Department.js';
 import Faculty from '../models/Faculty.js';
 import { protect, requireRole } from '../middleware/auth.js';
+import { friendlyValidationMessage } from '../utils/validation.js';
 
 const router = express.Router();
 router.use(protect);
@@ -23,9 +24,13 @@ router.post('/', requireRole('admin'), async (req, res) => {
 });
 
 router.put('/:id', requireRole('admin'), async (req, res) => {
-  const dept = await Department.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-  if (!dept) return res.status(404).json({ message: 'Department not found' });
-  res.json(dept);
+  try {
+    const dept = await Department.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!dept) return res.status(404).json({ message: 'Department not found' });
+    res.json(dept);
+  } catch (err) {
+    res.status(400).json({ message: err.code === 11000 ? 'Department name/code already exists' : friendlyValidationMessage(err) });
+  }
 });
 
 router.delete('/:id', requireRole('admin'), async (req, res) => {

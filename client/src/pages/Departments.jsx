@@ -10,6 +10,10 @@ export default function Departments() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(true)
+  // Two-step in-app delete confirmation (see Faculty.jsx): first click
+  // arms the row's button, second click fires the DELETE call. No
+  // native browser confirm dialog anywhere in the client.
+  const [pendingDelete, setPendingDelete] = useState(null)
 
   function load() {
     setLoading(true)
@@ -37,9 +41,16 @@ export default function Departments() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this department?')) return
+    if (pendingDelete !== id) {
+      setError('')
+      setNotice('')
+      setPendingDelete(id)
+      return
+    }
+    setPendingDelete(null)
     try {
       await api(`/departments/${id}`, { method: 'DELETE' })
+      setNotice('Department deleted.')
       load()
     } catch (err) {
       setError(err.message)
@@ -73,7 +84,18 @@ export default function Departments() {
                 <td>{d.code}</td>
                 <td>{d.hod ? `${d.hod.name} (${d.hod.email})` : '—'}</td>
                 <td>{d.facultyCount ?? 0}</td>
-                {isAdmin && <td><button className="btn btn-danger btn-sm" onClick={() => handleDelete(d._id)}>Delete</button></td>}
+                {isAdmin && (
+                  <td>
+                    {pendingDelete === d._id ? (
+                      <>
+                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(d._id)}>Confirm delete?</button>{' '}
+                        <button className="btn btn-sm" onClick={() => setPendingDelete(null)}>Cancel</button>
+                      </>
+                    ) : (
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(d._id)}>Delete</button>
+                    )}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

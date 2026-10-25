@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { api, getUser } from '../api.js'
 
 const EMPTY = { name: '', email: '', password: '', facultyId: '', department: '', designation: '', qualification: '', phone: '', subjects: '' }
+const DESIGNATIONS = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer']
 
 export default function Faculty() {
   const user = getUser()
@@ -12,6 +13,13 @@ export default function Faculty() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(true)
+  const [deptsLoading, setDeptsLoading] = useState(true)
+  const [deptsError, setDeptsError] = useState('')
+  // Two-step in-app delete confirmation: first click arms this row's
+  // button, second click fires the DELETE call. No native browser confirm dialog, which
+  // auto-dismisses (returning false) in automated browsers and silently
+  // swallowed deletes. Cancel (or arming another row) resets it.
+  const [pendingDelete, setPendingDelete] = useState(null)
 
   function load() {
     setLoading(true)
@@ -23,7 +31,11 @@ export default function Faculty() {
 
   useEffect(() => {
     load()
-    api('/departments').then(setDepartments).catch(() => {})
+    setDeptsLoading(true)
+    api('/departments')
+      .then(setDepartments)
+      .catch((err) => setDeptsError(err.message))
+      .finally(() => setDeptsLoading(false))
   }, [])
 
   async function handleAdd(e) {
@@ -45,9 +57,17 @@ export default function Faculty() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this faculty member?')) return
+    // First click arms, second click deletes (see pendingDelete above).
+    if (pendingDelete !== id) {
+      setError('')
+      setNotice('')
+      setPendingDelete(id)
+      return
+    }
+    setPendingDelete(null)
     try {
       await api(`/faculty/${id}`, { method: 'DELETE' })
+      setNotice('Faculty member deleted.')
       load()
     } catch (err) {
       setError(err.message)
@@ -67,20 +87,29 @@ export default function Faculty() {
             <label>Faculty ID<input value={form.facultyId} onChange={(e) => setForm({ ...form, facultyId: e.target.value })} required /></label>
             <label>Department
               <select value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} required>
-                <option value="">Select department</option>
+                {deptsLoading
+                  ? <option value="" disabled>Loading…</option>
+                  : <option value="">Select department</option>}
                 {departments.map((d) => <option key={d._id} value={d._id}>{d.name} ({d.code})</option>)}
               </select>
             </label>
-            <label>Designation<input value={form.designation} onChange={(e) => setForm({ ...form, designation: e.target.value })} /></label>
+            <label>Designation
+              <select value={form.designation} onChange={(e) => setForm({ ...form, designation: e.target.value })} required>
+                <option value="">Select designation</option>
+                {DESIGNATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </label>
             <label>Qualification<input value={form.qualification} onChange={(e) => setForm({ ...form, qualification: e.target.value })} /></label>
             <label>Phone<input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></label>
             <label className="full">Subjects (comma separated)<input value={form.subjects} onChange={(e) => setForm({ ...form, subjects: e.target.value })} placeholder="Data Structures, DBMS" /></label>
           </div>
+          {deptsError && <div className="alert error">Could not load departments: {deptsError}</div>}
           {error && <div className="alert error">{error}</div>}
           {notice && <div className="alert success">{notice}</div>}
           <button className="btn btn-primary">Add Faculty</button>
         </form>
       )}
+      {!isAdmin && error && <div className="alert error">{error}</div>}
       {loading ? <div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading…</span></div> : (
         <table className="table">
           <thead>
@@ -95,13 +124,23 @@ export default function Faculty() {
                 <td>{f.designation || '—'}</td>
                 <td>{f.qualification || '—'}</td>
                 <td>{(f.subjects || []).join(', ') || '—'}</td>
-                {isAdmin && <td><button className="btn btn-danger btn-sm" onClick={() => handleDelete(f._id)}>Delete</button></td>}
+                {isAdmin && (
+                  <td>
+                    {pendingDelete === f._id ? (
+                      <>
+                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(f._id)}>Confirm delete?</button>{' '}
+                        <button className="btn btn-sm" onClick={() => setPendingDelete(null)}>Cancel</button>
+                      </>
+                    ) : (
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(f._id)}>Delete</button>
+                    )}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
         </table>
       )}
-      {!isAdmin && error && <div className="alert error">{error}</div>}
     </div>
   )
 }
