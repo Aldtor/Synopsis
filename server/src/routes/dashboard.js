@@ -31,20 +31,41 @@ router.get('/summary', async (req, res) => {
     // "Today" is an IST day window (Asia/Kolkata, UTC+5:30, no DST),
     // not the server's local day (Vercel runs on UTC).
     const { start: todayStart, end: tomorrowStart } = istTodayWindow();
-    const deptFilter = req.user.role === 'hod' ? { department: req.user.department } : {};
-    // HOD scoping (finding 8): pendingLeaves, todayPresent,
-    // conflictsPrevented and recentConflicts are all scoped through
-    // the HOD department's faculty ids, matching /charts. Admins keep
-    // the global view; faculty users keep the previous summary counts.
-    let scopedFilter = null;
-    if (req.user.role === 'hod') {
-      scopedFilter = { faculty: { $in: await scopedFacultyIds(req) } };
+    const isHod = req.user.role === 'hod';
+    const isFaculty = req.user.role === 'faculty';
+    // Scoping (finding 8 for HOD, gap F3 for faculty): HODs see their own
+    // department, faculty users see ONLY their own record, admins keep
+    // the global view. A faculty summary previously returned global
+    // counts plus the global top-5 recentConflicts with other faculty
+    // members' names — a data leak, now closed.
+    const myIds = isHod || isFaculty ? await scopedFacultyIds(req) : null;
+    const scopedFilter = myIds ? { faculty: { $in: myIds } } : null;
+    const facultyFilter = isHod
+      ? { department: req.user.department }
+      : isFaculty
+        ? { _id: { $in: myIds } }
+        : {};
+    const timetableFilter = isHod
+      ? { department: req.user.department }
+      : isFaculty
+        ? { faculty: { $in: myIds } }
+        : {};
+    // deptCount: admin/HOD keep the global count (unchanged behaviour);
+    // faculty users see only their own department (1, or 0 with no record).
+    let deptCountPromise;
+    if (isFaculty) {
+      const mine = await Faculty.findOne({ user: req.user._id }).select('department').lean();
+      deptCountPromise = mine
+        ? Department.countDocuments({ _id: mine.department })
+        : Promise.resolve(0);
+    } else {
+      deptCountPromise = Department.countDocuments();
     }
     const [facultyCount, deptCount, timetableCount, pendingLeaves, conflictsPrevented, todayAttendance] =
       await Promise.all([
-        Faculty.countDocuments(deptFilter),
-        Department.countDocuments(),
-        Timetable.countDocuments(deptFilter),
+        Faculty.countDocuments(facultyFilter),
+        deptCountPromise,
+        Timetable.countDocuments(timetableFilter),
         Leave.countDocuments({ status: 'Pending', ...(scopedFilter || {}) }),
         ConflictLog.countDocuments(scopedFilter || {}),
         Attendance.countDocuments({
