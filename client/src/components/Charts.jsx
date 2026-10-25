@@ -1,8 +1,11 @@
-// Hand-rolled SVG charts — no chart dependency, green liquid-glass theme.
-// All text uses the existing high-contrast tokens: near-white #F2F7F3 and
-// sage #C2D6C9 on the dark glass panels. Bars use the emerald family only
-// (#059669, #10B981, #34D399, #6EE7B7, #A7F3D0); absent uses the existing
-// semantic red #F87171, never blue/purple.
+// Hand-rolled SVG charts — no chart dependency, Burgundy Cream theme.
+// Chart cards are cream light-glass panels, so all SVG text uses the
+// spec's light-surface pairs: dark #0E0D15 / wine #812D35 / plum
+// #934372 on cream. Bars use only spec hexes: wine #812D35, plum
+// #934372, dusty rose #C78997, peach #F5B297 (peach bars carry a wine
+// stroke so they stay delineated on cream). Attendance binary mapping
+// (same as badges): present = peach fill + dark text, absent = wine
+// fill + cream text — never green/blue.
 //
 // Labels are formatted at the Dashboard/API boundary (see Dashboard.jsx:
 // ISO dates become "25 Oct" there). Charts never slice a label — they
@@ -12,7 +15,7 @@
 // names would otherwise collide with the bars).
 import React from 'react'
 
-const EMERALDS = ['#34D399', '#10B981', '#6EE7B7', '#059669', '#A7F3D0']
+const WINES = ['#812D35', '#934372', '#C78997', '#F5B297']
 
 function truncateLabel(label, maxLen = 14) {
   const s = String(label ?? '')
@@ -62,12 +65,12 @@ export function BarChart({ title, subtitle, data }) {
             const valueX = Math.min(76 + w, W - 8)
             return (
               <g key={d.code || d.department}>
-                <text x="0" y={y + barH / 2 + 4} fill="#C2D6C9" fontSize="12">
+                <text x="0" y={y + barH / 2 + 4} fill="#0E0D15" fontSize="12">
                   <title>{fullLabel}</title>
                   {truncateLabel(fullLabel)}
                 </text>
-                <rect x="70" y={y + 4} width={Math.max(w, d.count > 0 ? 4 : 0)} height={Math.max(barH - 10, 6)} rx="5" fill={EMERALDS[i % EMERALDS.length]} />
-                <text x={valueX} y={y + barH / 2 + 4} fill="#F2F7F3" fontSize="12" fontWeight="700">{d.count}</text>
+                <rect x="70" y={y + 4} width={Math.max(w, d.count > 0 ? 4 : 0)} height={Math.max(barH - 10, 6)} rx="5" fill={WINES[i % WINES.length]} stroke={WINES[i % WINES.length] === '#F5B297' ? 'rgba(129,45,53,0.55)' : 'none'} />
+                <text x={valueX} y={y + barH / 2 + 4} fill="#812D35" fontSize="12" fontWeight="700">{d.count}</text>
               </g>
             )
           })}
@@ -98,7 +101,7 @@ export function AttendanceTrendChart({ data }) {
   return (
     <div className="chart-card card">
       <h3>Attendance trend — last 14 days</h3>
-      <p className="muted small">Present (emerald) vs absent (red) per day. Leave / half-day records are not counted in either bar.</p>
+      <p className="muted small">Present (peach) vs absent (wine) per day. Leave / half-day records are not counted in either bar.</p>
       {allZero ? (
         <div className="empty-state"><p>No attendance data yet.</p></div>
       ) : (
@@ -107,8 +110,8 @@ export function AttendanceTrendChart({ data }) {
             const y = top + plotH * (1 - f)
             return (
               <g key={f}>
-                <line x1={left} x2={W - 10} y1={y} y2={y} stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
-                <text x={left - 5} y={y + 4} fill="#C2D6C9" fontSize="11" textAnchor="end">{Math.round(max * f)}</text>
+                <line x1={left} x2={W - 10} y1={y} y2={y} stroke="rgba(129,45,53,0.20)" strokeWidth="1" />
+                <text x={left - 5} y={y + 4} fill="#934372" fontSize="11" textAnchor="end">{Math.round(max * f)}</text>
               </g>
             )
           })}
@@ -118,12 +121,12 @@ export function AttendanceTrendChart({ data }) {
             const ah = (d.absent / max) * plotH
             return (
               <g key={d.date || d.label}>
-                <rect x={x - barW - 2} y={top + plotH - ph} width={barW} height={ph} rx="3" fill="#34D399" />
-                <rect x={x + 2} y={top + plotH - ah} width={barW} height={ah} rx="3" fill="#F87171" />
+                <rect x={x - barW - 2} y={top + plotH - ph} width={barW} height={ph} rx="3" fill="#F5B297" stroke="rgba(129,45,53,0.55)" />
+                <rect x={x + 2} y={top + plotH - ah} width={barW} height={ah} rx="3" fill="#812D35" />
                 {/* Label verbatim from the Dashboard boundary — never sliced. */}
-                <text x={x} y={H - 18} fill="#C2D6C9" fontSize="10" textAnchor="middle">{d.label}</text>
-                {d.present > 0 && <text x={x - barW / 2 - 2} y={top + plotH - ph - 4} fill="#F2F7F3" fontSize="10" textAnchor="middle">{d.present}</text>}
-                {d.absent > 0 && <text x={x + barW / 2 + 2} y={top + plotH - ah - 4} fill="#F2F7F3" fontSize="10" textAnchor="middle">{d.absent}</text>}
+                <text x={x} y={H - 18} fill="#934372" fontSize="10" textAnchor="middle">{d.label}</text>
+                {d.present > 0 && <text x={x - barW / 2 - 2} y={top + plotH - ph - 4} fill="#0E0D15" fontSize="10" textAnchor="middle">{d.present}</text>}
+                {d.absent > 0 && <text x={x + barW / 2 + 2} y={top + plotH - ah - 4} fill="#812D35" fontSize="10" textAnchor="middle">{d.absent}</text>}
               </g>
             )
           })}

@@ -19,9 +19,10 @@ export function exportCSV(filename, columns, rows) {
   triggerDownload(URL.createObjectURL(blob), filename)
 }
 
-// PDF: dark-forest header row (#0A120E) with pale-mint text (#D1FAE5)
-// and dark body text (#0A120E) on white — both high-contrast pairs.
-// Title in dark forest on white. Tables paginate automatically.
+// PDF: Burgundy Cream header row (wine #812D35 with cream #F5E4C4
+// text, 7.11:1) and near-black body text (#0E0D15) with cream zebra
+// rows (#F5E4C4) — the spec's table pairing. Title in near-black.
+// Tables paginate automatically.
 export function exportPDF(title, filename, columns, rows) {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' })
   const pageW = doc.internal.pageSize.getWidth()
@@ -36,21 +37,21 @@ export function exportPDF(title, filename, columns, rows) {
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(16)
-  doc.setTextColor('#0A120E')
+  doc.setTextColor('#0E0D15')
   doc.text(title, margin, y)
   y += 8
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9)
-  doc.setTextColor('#404040')
+  doc.setTextColor('#812D35')
   doc.text(`Faculty Management System — exported ${new Date().toLocaleString()} — ${rows.length} row(s)`, margin, y)
   y += 22
 
   function drawHeader() {
-    doc.setFillColor('#0A120E')
+    doc.setFillColor('#812D35')
     doc.rect(margin, y, usable, 22, 'F')
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(fontSize)
-    doc.setTextColor('#D1FAE5')
+    doc.setTextColor('#F5E4C4')
     let x = margin
     columns.forEach((c, i) => {
       // Wrap header labels like body cells: a long label used to
@@ -80,10 +81,10 @@ export function exportPDF(title, filename, columns, rows) {
       doc.setFontSize(fontSize)
     }
     if (rowIdx % 2 === 1) {
-      doc.setFillColor('#ECFDF5')
+      doc.setFillColor('#F5E4C4')
       doc.rect(margin, y, usable, rowH, 'F')
     }
-    doc.setTextColor('#0A120E')
+    doc.setTextColor('#0E0D15')
     let x = margin
     cells.forEach((lines, i) => {
       doc.text(lines, x + pad, y + pad + lineH - 3)
@@ -92,7 +93,7 @@ export function exportPDF(title, filename, columns, rows) {
     y += rowH
   })
   if (rows.length === 0) {
-    doc.setTextColor('#0A120E')
+    doc.setTextColor('#0E0D15')
     doc.text('No rows to export.', margin, y + 14)
   }
   doc.save(filename)

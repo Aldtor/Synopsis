@@ -1,71 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap');
 /* ------------------------------------------------------------------ */
-/*  Faculty Management System — Deep Forest / Emerald Liquid Glass    */
+/*  Faculty Management System — Burgundy Cream Liquid Glass           */
+/*  (locked theme spec 2026-10-25; replaces the green theme entirely)  */
 /*  Pure CSS. No API, route, role-gating or data-flow changes here.    */
-/*  Readability rule: panels are DARK-tinted glass (not pale glass),   */
-/*  so near-white text stays high-contrast over the moving backdrop.   */
 /*                                                                    */
-/*  PALETTE (green redesign, Oct 2026 — one green family, varied      */
-/*  across surfaces; replaces the warm-sunset palette entirely)        */
-/*  --bg            #0A120E  Deep forest near-black base              */
-/*                   Page background, aurora layer, modal scrim tint. */
-/*                   Body gradient runs #14231B -> #0A120E -> #060B08 */
-/*  --card          rgba(16,38,28,0.55)  Emerald-tinted glass         */
-/*                   Cards, tables, stat cards, login card.           */
-/*  --sidebar       rgba(8,24,17,0.68)  Darker forest glass           */
-/*                   Sidebar only (deeper than cards, for hierarchy).*/
-/*  --text          #F2F7F3  Mint-tinted near-white body text         */
-/*  --muted         #C2D6C9  Soft sage secondary text (labels, hints)*/
-/*  --border        rgba(110,231,183,0.22)  Mint-tinted card borders  */
-/*  Green flow (aurora, headings, brand, nav-active, stat bar):       */
-/*    deep emerald #059669, jade #10B981, emerald #34D399,             */
-/*    mint #6EE7B7, pale mint #D1FAE5 / #A7F3D0 (gradient ends only). */
-/*  --accent        #34D399 emerald, deep #059669 — SOLID fills ONLY: */
-/*                   primary buttons + key numbers (stat values use  */
-/*                   mint #6EE7B7). Never a status tint or badge.     */
-/*                   Nav-active links and the login mark use dark     */
-/*                   forest text #04150D on the emerald gradient      */
-/*                   (white on emerald is only 2.5:1, so it fails).    */
-/*  LIQUID GLASS: panels/cards/sidebar/modals are translucent with    */
-/*  backdrop blur (22px cards, 24px sidebar, 28px modals, 14px        */
-/*  overlay/buttons), a glossy top highlight (white 0.18 gradient +   */
-/*  inset 0 1px 0 white 0.18), soft mint translucent borders, and     */
-/*  layered shadows with a faint emerald glow.                        */
-/*  SEMANTIC STATES — exactly one colour per state, everywhere:       */
-/*    success #4ADE80 (text #BBF7D0 on dark green tint) — green family*/
-/*    warning amber #FBBF24 family (text #FDE68A on dark amber tint)  */
-/*      — tinted badge/alert ONLY, never a solid fill, so warning     */
-/*      and the emerald accent can never be confused.                */
-/*    danger  #F87171 / #DC2626 (text #FECACA on dark red tint;       */
-/*      conflict box keeps its dark-red banner + red left bar) —      */
-/*      UNCHANGED from the previous theme.                            */
-/*    info    green neutral #D1FAE5 (on deep green tint               */
-/*      rgba(20,44,33)) with mint border rgba(167,243,208,0.50);      */
-/*      info is a green-neutral tint, never blue.                     */
-/*  Focus rings are mint #A7F3D0 with an emerald glow, never the      */
-/*  accent gradient, so keyboard focus is always distinguishable      */
-/*  from a primary action.                                            */
+/*  PALETTE — ONLY these hexes, plus opacity variants of them:        */
+/*    --base      #0E0D15  Near-black page bg, sidebar, dark glass    */
+/*    --primary   #812D35  Deep wine: primary buttons, active nav,    */
+/*                         table headers, labels on light, errors   */
+/*    --highlight #F5B297  Peach: large/bold highlights on dark,      */
+/*                         secondary CTA, focus rings, glows        */
+/*    --surface   #F5E4C4  Cream: table/form/login cards, light glass */
+/*    --glow      #F5D6A2  Warm glow / large numbers on dark, warning */
+/*    --muted-dk  #C78997  Dusty rose: muted text on DARK only,       */
+/*                         glass borders on dark (never on cream)   */
+/*    --border-gl #C388A9  Dusty pink: glass border/divider on dark,  */
+/*                         hairline border on light cards, glow     */
+/*                         ONLY — never small text on either surface */
+/*    --plum      #934372  Plum: secondary heading/label text on     */
+/*                         LIGHT only (never normal text on dark)   */
+/*  CONTRAST (WCAG, all passing pairs used for text):                 */
+/*    #0E0D15 on #F5E4C4 15.43:1 · #F5E4C4 on #0E0D15 15.43:1          */
+/*    #812D35 on #F5E4C4 7.11:1 · #F5E4C4 on #812D35 7.11:1            */
+/*    #F5B297 on #0E0D15 10.76:1 (large/bold only)                     */
+/*    #C78997 on #0E0D15 6.86:1 (muted on dark)                        */
+/*    #934372 on #F5E4C4 5.10:1 (secondary label on light)            */
+/*  FORBIDDEN and absent here: #C78997 on cream, #934372 on dark      */
+/*  for normal text, #C388A9 as small text, any light-on-light text.   */
+/*  FONTS: headings Montserrat 700 ONLY; tables, form fields and      */
+/*  navigation labels are Open Sans (400/600). No Hindi display fonts.*/
+/*  LIQUID GLASS, RE-TINTED not replaced: frosted panels, blur, soft  */
+/*  shadows, rounded corners; glows are wine/peach throughout.        */
+/*  Dark glass = #0E0D15 base with low-opacity wine/peach glows;      */
+/*  light glass cards = #F5E4C4 at ~88–92% over the dark base with a   */
+/*  #C388A9 hairline border.                                          */
+/*  STATUS SYSTEM (text/icon + wine/cream only, no new colours):      */
+/*    filled wine #812D35 = error / rejected / absent / conflict      */
+/*    peach fill #F5B297 + dark text = approved / present / success   */
+/*    outlined wine = pending (wine border + wine text on cream)      */
+/*    plum tint = leave / half-day (plum text/border on cream)        */
+/*    warning = warm-glow #F5D6A2 panel + dark text + wine border     */
+/*  BUTTONS: primary = wine fill + cream text; secondary (.btn) =     */
+/*  peach fill + dark text; danger = outlined wine on cream (solid    */
+/*  wine is already the primary fill, so delete stays distinct);      */
+/*  sidebar outline = cream border/text on dark.                      */
+/*  FORM INPUTS (per spec): #F5E4C4 field, #0E0D15 typed text,        */
+/*  #812D35 label, #F5B297 focus ring.                                */
 /* ------------------------------------------------------------------ */
 
 :root {
-  --primary: #34D399;
-  --primary-dark: #059669;
-  --accent: #34D399;
-  --accent-deep: #10B981;
-  --accent-text: #04150D;
-  --danger: #f87171;
-  --danger-dark: #dc2626;
-  --success: #4ade80;
-  --warning: #FBBF24;
-  --info: #D1FAE5;
-  --bg: #0A120E;
-  --card: rgba(16, 38, 28, 0.55);
-  --text: #F2F7F3;
-  --muted: #C2D6C9;
-  --border: rgba(110, 231, 183, 0.20);
-  --sidebar: rgba(8, 24, 17, 0.68);
-  --sidebar-text: #D6E6DB;
-  --glass-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.30), 0 0 24px rgba(16, 185, 129, 0.10);
-  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(110, 231, 183, 0.06);
+  --base: #0E0D15;
+  --primary: #812D35;
+  --highlight: #F5B297;
+  --surface: #F5E4C4;
+  --glow: #F5D6A2;
+  --muted-on-dark: #C78997;
+  --border-glass: #C388A9;
+  --plum: #934372;
+  --text-on-dark: #F5E4C4;
+  --text-on-light: #0E0D15;
+  --bg: #0E0D15;
+  --card: rgba(245, 228, 196, 0.90);
+  --text: #F5E4C4;
+  --muted: #C78997;
+  --border: rgba(195, 136, 169, 0.45);
+  --sidebar: rgba(14, 13, 21, 0.72);
+  --sidebar-text: #F5E4C4;
+  --glass-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.30), 0 0 24px rgba(129, 45, 53, 0.22);
+  --glass-inset: inset 0 1px 0 rgba(245, 228, 196, 0.18), inset 0 0 0 1px rgba(195, 136, 169, 0.10);
+  --radius: 20px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
   color-scheme: dark;
 }
 
@@ -75,21 +79,26 @@ html { background: var(--bg); }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background:
-    radial-gradient(1200px 700px at 85% -10%, rgba(16, 185, 129, 0.24), transparent 60%),
-    radial-gradient(900px 600px at -10% 110%, rgba(5, 150, 105, 0.18), transparent 60%),
-    linear-gradient(180deg, #14231B 0%, var(--bg) 45%, #060B08 100%);
+    radial-gradient(1200px 700px at 85% -10%, rgba(129, 45, 53, 0.38), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(245, 178, 151, 0.16), transparent 60%),
+    var(--bg);
   background-attachment: fixed;
   color: var(--text);
-  line-height: 1.5;
+  line-height: 1.6;
+  letter-spacing: -0.005em;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* ---------------- Forest / aurora background ---------------------- */
-/* Fixed layer behind everything. Animation uses transform + opacity  */
-/* only (GPU-friendly); the blur is static on each blob, never        */
-/* animated, so it costs nothing per frame.                           */
+h1, h2, h3 { font-family: 'Montserrat', 'Open Sans', sans-serif; font-weight: 700; }
+
+/* ---------------- Burgundy / aurora background -------------------- */
+/* Fixed layer behind everything. Structure preserved exactly as the  */
+/* frontend fixer left it (4 blobs, transform/opacity animation only, */
+/* blur static on each blob); ONLY the colours change: wine/peach/    */
+/* plum/rose glows in place of the previous theme's glows.            */
 .aurora {
   position: fixed;
   inset: 0;
@@ -107,24 +116,24 @@ body {
 }
 .aurora-blob-1 {
   width: 52vw; height: 52vw; left: -12vw; top: -16vw;
-  background: radial-gradient(circle at 40% 40%, #059669, transparent 70%);
+  background: radial-gradient(circle at 40% 40%, #812D35, transparent 70%);
   animation: aurora-drift-1 32s ease-in-out infinite alternate;
 }
 .aurora-blob-2 {
   width: 44vw; height: 44vw; right: -10vw; top: 8vh;
-  background: radial-gradient(circle at 50% 50%, #10B981, transparent 70%);
-  opacity: 0.42;
+  background: radial-gradient(circle at 50% 50%, #F5B297, transparent 70%);
+  opacity: 0.30;
   animation: aurora-drift-2 40s ease-in-out infinite alternate;
 }
 .aurora-blob-3 {
   width: 38vw; height: 38vw; left: 30vw; bottom: -18vw;
-  background: radial-gradient(circle at 50% 50%, #34D399, transparent 70%);
-  opacity: 0.48;
+  background: radial-gradient(circle at 50% 50%, #934372, transparent 70%);
+  opacity: 0.42;
   animation: aurora-drift-1 36s ease-in-out infinite alternate-reverse;
 }
 .aurora-blob-4 {
   width: 24vw; height: 24vw; right: 22vw; bottom: 12vh;
-  background: radial-gradient(circle at 50% 50%, #6EE7B7, transparent 70%);
+  background: radial-gradient(circle at 50% 50%, #C78997, transparent 70%);
   opacity: 0.20;
   animation: aurora-drift-2 28s ease-in-out infinite alternate-reverse;
 }
@@ -142,19 +151,28 @@ body {
 
 /* ---------------- Typography -------------------------------------- */
 h1 {
-  font-size: 1.8rem;
-  font-weight: 800;
+  font-size: 2rem;
+  line-height: 1.15;
   letter-spacing: -0.02em;
-  margin: 0 0 0.5rem;
-  background: linear-gradient(90deg, #ffffff 0%, #D1FAE5 45%, #6EE7B7 100%);
+  margin: 0 0 0.35rem;
+  background: linear-gradient(90deg, #F5E4C4 0%, #F5D6A2 45%, #F5B297 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
-h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #F0FAF4; letter-spacing: -0.01em; }
+/* Headings on the dark page surface. Headings inside a light card get
+   the wine treatment below, so they never sit cream-on-cream. */
+h2 { font-size: 1.2rem; font-weight: 700; margin: 1.75rem 0 0.85rem; color: #F5E4C4; letter-spacing: -0.01em; }
+h3 { color: #F5E4C4; }
+a { color: #F5B297; }
+.card a, .login-card a, .table a { color: #812D35; }
 .muted { color: var(--muted); }
 .small { font-size: 0.85rem; }
+/* Muted text inside a light card: plum on cream (5.10:1), never the
+   dusty rose, which fails on cream. */
+.card .muted, .login-card .muted, .empty-state .muted { color: #934372; }
+.content > p.muted:first-of-type, .login-subtitle { font-size: 0.98rem; }
 
 /* Subtle page entrance — transform/opacity only. */
 .content, .login-card { animation: page-in 0.45s ease both; }
@@ -163,25 +181,45 @@ h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #F0FAF4; letter-spacin
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ---------------- Glass primitive --------------------------------- */
-/* NOTE: .glass and .modal-card were removed from this selector: grep
-   over src/ shows neither is used by any JSX (the modal rules below
-   were also deleted — they existed only "for any future dialog"). */
-.card, .stat-card, .table, .login-card, .sidebar {
+/* ---------------- Glass primitives -------------------------------- */
+/* Light glass cards/tables/login: cream at ~90% over the dark base,  */
+/* dusty-pink hairline border, wine-tinted shadow. Sidebar stays     */
+/* dark glass (near-black base, wine/peach glow) for hierarchy.      */
+.card, .stat-card, .table, .login-card {
   background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05) 55%),
+    linear-gradient(160deg, rgba(245, 228, 196, 0.06), rgba(245, 228, 196, 0) 55%),
     var(--card);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  backdrop-filter: blur(22px) saturate(150%);
-  border: 1px solid var(--border);
+  -webkit-backdrop-filter: blur(22px) saturate(130%);
+  backdrop-filter: blur(22px) saturate(130%);
+  border: 1px solid rgba(195, 136, 169, 0.65);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-on-light);
+}
+.sidebar {
+  background:
+    linear-gradient(180deg, rgba(245, 178, 151, 0.10), rgba(245, 178, 151, 0.03)),
+    var(--sidebar);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid rgba(195, 136, 169, 0.35);
   box-shadow: var(--glass-shadow), var(--glass-inset);
+  color: var(--sidebar-text);
+}
+/* Headings/labels inside light cards: wine primary, plum secondary. */
+.card h2, .login-card h2 { color: #812D35; }
+.card h3, .login-card h3 { color: #812D35; }
+.card h1, .login-card h1 {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: #812D35;
+  color: #812D35;
 }
 
 /* ---------------- Layout / sidebar -------------------------------- */
 .layout { display: flex; min-height: 100vh; }
 .sidebar {
   width: 250px;
-  color: var(--sidebar-text);
   display: flex;
   flex-direction: column;
   padding: 1.25rem 1rem;
@@ -190,137 +228,202 @@ h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #F0FAF4; letter-spacin
   height: 100vh;
   border-radius: 0;
   border-top: none; border-bottom: none; border-left: none;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
-    var(--sidebar);
-  /* Sidebar glass is deeper + stronger-blurred than cards (24px). */
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  backdrop-filter: blur(24px) saturate(160%);
 }
-.brand { padding: 0.5rem 0.5rem 1.25rem; border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+.brand { padding: 0.5rem 0.5rem 1.25rem; border-bottom: 1px solid rgba(195, 136, 169, 0.35); }
 .brand-title {
-  font-size: 1.85rem; font-weight: 800; letter-spacing: 1px;
-  background: linear-gradient(90deg, #ffffff, #A7F3D0 55%, #6EE7B7);
+  font-family: 'Montserrat', 'Open Sans', sans-serif;
+  font-size: 1.85rem; font-weight: 700; letter-spacing: 2px;
+  background: linear-gradient(90deg, #F5E4C4, #F5B297 55%, #F5D6A2);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent; color: transparent;
 }
-.brand-sub { font-size: 0.8rem; color: var(--sidebar-text); margin-top: 0.25rem; }
+.brand-sub { font-size: 0.8rem; color: var(--muted-on-dark); margin-top: 0.25rem; }
 .nav { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 1.25rem; }
 .nav-link {
   color: var(--sidebar-text);
   text-decoration: none;
-  padding: 0.65rem 0.8rem;
-  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  border-radius: 14px;
+  font-family: 'Open Sans', sans-serif;
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
   border: 1px solid transparent;
+  position: relative;
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition-timing-function: var(--ease);
 }
-.nav-link:hover { background: rgba(110, 231, 183, 0.12); color: #fff; transform: translateX(2px); }
+.nav-link:hover { background: rgba(245, 178, 151, 0.14); color: #F5E4C4; transform: translateX(2px); }
 .nav-link:active { transform: translateX(1px) scale(0.99); }
 .nav-link.active {
-  background: linear-gradient(135deg, rgba(5, 150, 105, 0.88), rgba(16, 185, 129, 0.75));
-  color: #04150D;
-  border-color: rgba(255, 255, 255, 0.22);
-  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.35);
+  background: linear-gradient(135deg, #812D35, rgba(129, 45, 53, 0.85));
+  color: #F5E4C4;
+  border-color: rgba(245, 178, 151, 0.45);
+  box-shadow: 0 6px 20px rgba(129, 45, 53, 0.45);
+}
+.nav-link.active::before {
+  content: '';
+  position: absolute; left: -1rem; top: 22%; bottom: 22%; width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #F5B297, #812D35);
+  box-shadow: 0 0 12px rgba(245, 178, 151, 0.8);
 }
 .sidebar-footer { margin-top: auto; }
-.user-box { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.75rem 0.5rem; }
-.user-box strong { color: #fff; }
-.user-box span { font-size: 0.8rem; color: var(--sidebar-text); text-transform: capitalize; }
+.user-box {
+  display: flex; flex-direction: column; gap: 0.15rem;
+  padding: 0.75rem 0.5rem; margin-bottom: 0.75rem;
+  background: rgba(129, 45, 53, 0.28);
+  border: 1px solid rgba(195, 136, 169, 0.35);
+  border-radius: 14px;
+}
+.user-box strong { color: #F5E4C4; }
+.user-box span { font-size: 0.8rem; color: var(--muted-on-dark); text-transform: capitalize; }
 .main { flex: 1; padding: 2rem; overflow-x: auto; }
 .content { max-width: 1100px; margin: 0 auto; }
 
 /* ---------------- Forms / cards ----------------------------------- */
-.form { display: flex; flex-direction: column; gap: 0.75rem; }
+.form { display: flex; flex-direction: column; gap: 0.9rem; }
 .card {
-  border-radius: 18px;
+  border-radius: var(--radius);
   padding: 1.5rem;
   margin: 1rem 0;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition-timing-function: var(--ease);
 }
-.card:hover { transform: translateY(-2px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), 0 0 28px rgba(16, 185, 129, 0.14), var(--glass-inset); }
+.card:hover { transform: translateY(-2px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), 0 0 28px rgba(129, 45, 53, 0.22); }
 .card h2 { margin-top: 0; }
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.75rem;
+  gap: 0.9rem;
 }
 .form-grid .full { grid-column: 1 / -1; }
-label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; font-weight: 500; color: #DDEAE1; }
+/* Form labels: wine on light (7.11:1 on cream), per spec. Labels on
+   the dark page surface (filter row) inherit the same wine only when
+   inside a card; the filter-row labels below are re-coloured cream. */
+label { display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.9rem; font-weight: 600; color: #812D35; font-family: 'Open Sans', sans-serif; }
+.filter-row > label, .export-row label { color: #F5E4C4; }
+.filter-row > label { color: #F5E4C4; }
 input, select {
-  padding: 0.6rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.20);
-  border-radius: 12px;
+  color-scheme: light;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(129, 45, 53, 0.45);
+  border-radius: 14px;
   font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.07);
-  color: var(--text);
+  font-family: 'Open Sans', sans-serif;
+  background: #F5E4C4;
+  color: #0E0D15;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition-timing-function: var(--ease);
 }
-input::placeholder { color: #8FA89B; }
+input::placeholder { color: #934372; opacity: 1; }
 input:focus, select:focus {
   outline: none;
-  border-color: #34D399;
-  background: rgba(255, 255, 255, 0.11);
-  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.35);
+  border-color: #812D35;
+  background: #F5E4C4;
+  box-shadow: 0 0 0 3px rgba(245, 178, 151, 0.65), 0 0 0 1px rgba(129, 45, 53, 0.6);
 }
-select option { background: #0E231A; color: #F2F7F3; }
+select option { background: #F5E4C4; color: #0E0D15; }
 
 /* ---------------- Buttons ----------------------------------------- */
 .btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
   padding: 0.6rem 1.1rem;
   border: none;
   border-radius: 12px;
   font-size: 0.95rem;
+  font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   cursor: pointer;
   align-self: flex-start;
+  letter-spacing: 0.01em;
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, background 0.2s ease;
+  transition-timing-function: var(--ease);
 }
 .btn:active { transform: translateY(1px) scale(0.99); }
-/* Primary actions are the emerald accent: dark forest text on emerald
-   keeps contrast high, and emerald appears nowhere else as a solid fill. */
+.btn:disabled { cursor: wait; opacity: 0.65; }
+/* Secondary button (generic .btn: Edit, Cancel, Discard, Retry): peach
+   fill + dark text, per the spec's secondary-CTA treatment. */
+.btn {
+  background: #F5B297;
+  color: #0E0D15;
+  box-shadow: 0 6px 18px rgba(129, 45, 53, 0.25), inset 0 1px 0 rgba(245, 228, 196, 0.45);
+}
+.btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+/* Primary actions: solid wine + cream text (7.11:1). */
 .btn-primary {
-  background: linear-gradient(135deg, #34D399, #059669);
-  color: #04150D;
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  background: linear-gradient(135deg, #812D35, #934372);
+  color: #F5E4C4;
+  box-shadow: 0 8px 24px rgba(129, 45, 53, 0.45), inset 0 1px 0 rgba(245, 228, 196, 0.30);
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(16, 185, 129, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45); filter: brightness(1.05); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(129, 45, 53, 0.55), inset 0 1px 0 rgba(245, 228, 196, 0.30); filter: brightness(1.05); }
 .btn-primary:active { transform: translateY(1px) scale(0.99); filter: brightness(0.97); }
-.btn-primary:disabled { opacity: 0.65; cursor: default; transform: none; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25); }
+.btn-primary:disabled { opacity: 0.65; cursor: default; transform: none; box-shadow: 0 8px 24px rgba(129, 45, 53, 0.30); }
+/* Danger (Delete / Confirm delete / Reject): outlined wine on cream,
+   so it stays distinct from the solid-wine primary. The two-step
+   confirm wording ("Confirm delete?") still carries the meaning. */
 .btn-danger {
-  background: linear-gradient(135deg, #dc2626, #be123c);
-  color: #fff;
-  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  background: rgba(129, 45, 53, 0.08);
+  color: #812D35;
+  border: 1px solid #812D35;
+  box-shadow: none;
 }
-.btn-danger:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(239, 68, 68, 0.50); filter: brightness(1.08); }
+.btn-danger:hover { background: rgba(129, 45, 53, 0.16); transform: translateY(-1px); }
 .btn-danger:active { transform: translateY(1px) scale(0.99); }
 .btn-outline {
-  background: rgba(255, 255, 255, 0.07);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(14, 13, 21, 0.35);
+  color: #F5E4C4;
+  border: 1px solid rgba(245, 228, 196, 0.45);
   width: 100%;
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
+  box-shadow: none;
 }
-.btn-outline:hover { background: rgba(110, 231, 183, 0.14); transform: translateY(-1px); }
+.btn-outline:hover { background: rgba(129, 45, 53, 0.45); transform: translateY(-1px); }
 .btn-outline:active { transform: translateY(1px) scale(0.99); }
 .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.85rem; border-radius: 10px; }
 .btn-block { width: 100%; align-self: stretch; }
 
+/* Visible keyboard focus — distinct from mouse hover, never removed.
+   Peach on dark surfaces; wine + peach ring on light form fields. */
+.btn:focus-visible, .nav-link:focus-visible, .demo-btn:focus-visible,
+.nav-toggle:focus-visible, a:focus-visible {
+  outline: 2px solid #F5B297;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(245, 178, 151, 0.30);
+}
+input:focus-visible, select:focus-visible {
+  outline: 2px solid #812D35;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(245, 178, 151, 0.45);
+}
+
 /* ---------------- Tables ------------------------------------------ */
+/* Primary table pairing per spec: dark text on cream, wine header   */
+/* row with cream text (7.11:1). Tables sit on the dark page AND      */
+/* inside cream cards; the wine header + pink hairline border keep   */
+/* them legible in both places.                                      */
 .table {
   width: 100%;
   border-collapse: collapse;
-  border-radius: 18px;
+  border-radius: var(--radius);
   overflow: hidden;
   margin: 1rem 0;
   font-size: 0.92rem;
+  font-family: 'Open Sans', sans-serif;
 }
-.table th, .table td { padding: 0.7rem 0.85rem; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.10); color: var(--text); }
-.table th { background: rgba(255, 255, 255, 0.09); font-weight: 600; color: #DDEAE1; letter-spacing: 0.01em; }
+.table th, .table td { padding: 0.8rem 0.9rem; text-align: left; border-bottom: 1px solid rgba(129, 45, 53, 0.18); }
+.table th {
+  background: #812D35;
+  font-weight: 600;
+  color: #F5E4C4;
+  letter-spacing: 0.01em;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.table td { color: #0E0D15; }
 .table tbody tr { transition: background 0.2s ease; }
-.table tbody tr:hover { background: rgba(110, 231, 183, 0.08); }
+.table tbody tr:hover { background: rgba(129, 45, 53, 0.07); }
 .table tbody tr:last-child td { border-bottom: none; }
 
 /* ---------------- Stats ------------------------------------------- */
@@ -331,70 +434,76 @@ select option { background: #0E231A; color: #F2F7F3; }
   margin: 1.25rem 0;
 }
 .stat-card {
-  border-radius: 18px;
-  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius);
+  padding: 1.25rem 1.35rem;
   position: relative;
   overflow: hidden;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition-timing-function: var(--ease);
 }
 .stat-card::before {
   content: '';
   position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-  background: linear-gradient(180deg, #6EE7B7, #059669);
+  border-radius: 4px 0 0 4px;
+  background: linear-gradient(180deg, #F5B297, #812D35);
 }
-.stat-card:hover { transform: translateY(-3px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), 0 0 28px rgba(16, 185, 129, 0.14), var(--glass-inset); }
-.stat-value { font-size: 1.9rem; font-weight: 800; color: #6EE7B7; letter-spacing: -0.02em; }
-.stat-label { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), 0 0 28px rgba(129, 45, 53, 0.22); }
+.stat-value { font-size: 2rem; font-weight: 700; font-family: 'Open Sans', sans-serif; color: #812D35; letter-spacing: -0.02em; }
+.stat-label { color: #934372; font-size: 0.88rem; line-height: 1.45; margin-top: 0.25rem; }
 
 /* ---------------- Alerts, badges, conflicts ------------------------ */
-/* Deliberately NOT pale translucent glass: the 409 conflict details  */
-/* and error alerts use a dark red tint with bright red-pink text so  */
-/* they stay unmistakable on a glass panel. Do not lighten these.     */
-.alert { padding: 0.75rem 0.95rem; border-radius: 12px; font-size: 0.92rem; font-weight: 500; }
+/* Self-contained panels: readable on dark pages and inside cream    */
+/* cards alike. Error/conflict = filled wine + cream text; success =  */
+/* peach fill + dark text; warning = warm-glow panel + dark text.    */
+/* Deliberately NOT pale translucent glass: conflict details and     */
+/* error alerts stay unmistakable on any panel. Do not lighten these. */
+.alert { padding: 0.75rem 0.95rem; border-radius: 12px; font-size: 0.92rem; font-weight: 600; animation: page-in 0.35s var(--ease) both; }
 .alert.error {
-  background: rgba(69, 10, 10, 0.78);
-  color: #fecaca;
-  border: 1px solid rgba(248, 113, 113, 0.65);
-  box-shadow: 0 4px 18px rgba(220, 38, 38, 0.25);
+  background: #812D35;
+  color: #F5E4C4;
+  border: 1px solid #F5B297;
+  box-shadow: 0 4px 18px rgba(129, 45, 53, 0.35);
 }
 .alert.success {
-  background: rgba(5, 46, 22, 0.72);
-  color: #bbf7d0;
-  border: 1px solid rgba(74, 222, 128, 0.50);
+  background: #F5B297;
+  color: #0E0D15;
+  border: 1px solid #812D35;
 }
-/* Warning = amber, not emerald: tinted badge/alert only, so it can
-   never be mistaken for the emerald primary accent (solid fills only). */
 .alert.warning {
-  background: rgba(69, 39, 5, 0.78);
-  color: #FDE68A;
-  border: 1px solid rgba(251, 191, 36, 0.55);
-  box-shadow: 0 4px 18px rgba(245, 158, 11, 0.22);
+  background: #F5D6A2;
+  color: #0E0D15;
+  border: 1px solid #812D35;
+  box-shadow: 0 4px 18px rgba(129, 45, 53, 0.22);
 }
 .conflict-box {
-  background: rgba(69, 10, 10, 0.82);
-  border: 1px solid rgba(248, 113, 113, 0.75);
-  border-left: 4px solid #f87171;
+  background: #812D35;
+  border: 1px solid #F5B297;
+  border-left: 4px solid #F5B297;
   border-radius: 12px;
   padding: 0.85rem 1rem;
-  color: #fecaca;
+  color: #F5E4C4;
   font-size: 0.92rem;
-  font-weight: 500;
-  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(129, 45, 53, 0.35), inset 0 1px 0 rgba(245, 228, 196, 0.15);
+  animation: page-in 0.35s var(--ease) both;
 }
-.conflict-box strong { color: #fee2e2; }
-.conflict-box ul { margin: 0.5rem 0 0; padding-left: 1.25rem; color: #fecaca; }
+.conflict-box strong { color: #F5E4C4; }
+.conflict-box ul { margin: 0.5rem 0 0; padding-left: 1.25rem; color: #F5E4C4; }
 .badge {
   display: inline-block;
-  padding: 0.18rem 0.65rem;
+  padding: 0.22rem 0.7rem;
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
+  letter-spacing: 0.01em;
   border: 1px solid transparent;
 }
-.badge-present, .badge-approved { background: rgba(22, 101, 52, 0.55); color: #bbf7d0; border-color: rgba(74, 222, 128, 0.45); }
-.badge-absent, .badge-rejected { background: rgba(127, 29, 29, 0.55); color: #fecaca; border-color: rgba(248, 113, 113, 0.45); }
-.badge-pending { background: rgba(69, 39, 5, 0.55); color: #FDE68A; border-color: rgba(251, 191, 36, 0.50); }
-.badge-leave, .badge-half-day { background: rgba(20, 44, 33, 0.55); color: #D1FAE5; border-color: rgba(167, 243, 208, 0.45); }
+/* Binary status mapping (documented in the header): approved/present
+   = peach fill + dark text; rejected/absent = wine fill + cream text. */
+.badge-present, .badge-approved { background: #F5B297; color: #0E0D15; border-color: #812D35; }
+.badge-absent, .badge-rejected { background: #812D35; color: #F5E4C4; border-color: #812D35; }
+.badge-pending { background: transparent; color: #812D35; border-color: #812D35; }
+.badge-leave, .badge-half-day { background: rgba(147, 67, 114, 0.14); color: #934372; border-color: rgba(147, 67, 114, 0.55); }
 .filter-row { display: flex; gap: 1rem; align-items: flex-end; margin: 1rem 0 0; flex-wrap: wrap; }
 .review-box { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
 .review-box input { width: 130px; }
@@ -408,174 +517,70 @@ select option { background: #0E231A; color: #F2F7F3; }
   padding: 1rem;
 }
 .login-card {
-  border-radius: 20px;
-  padding: 2.25rem;
+  border-radius: 24px;
+  padding: 2.5rem 2.5rem 2.25rem;
   width: 100%;
   max-width: 420px;
+  position: relative;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(195, 136, 169, 0.45), var(--glass-inset);
 }
-.login-card h1 { font-size: 1.5rem; }
-.demo-box { margin-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.14); padding-top: 1rem; }
-.demo-box strong { color: #fff; }
+.login-card h1 { font-size: 1.65rem; }
+.login-mark {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Montserrat', 'Open Sans', sans-serif;
+  font-size: 1.05rem; font-weight: 700; letter-spacing: 1.5px; color: #F5E4C4;
+  background: linear-gradient(135deg, #812D35, #934372 55%, #812D35);
+  box-shadow: 0 10px 28px rgba(129, 45, 53, 0.55), inset 0 1px 0 rgba(245, 228, 196, 0.30);
+  margin-bottom: 1.25rem;
+}
+.login-subtitle { margin-bottom: 1.5rem; }
+.demo-box { margin-top: 1.75rem; border-top: 1px solid rgba(129, 45, 53, 0.30); padding-top: 1rem; }
+.demo-box strong { color: #812D35; }
 .demo-list { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.5rem; }
 .demo-btn {
   text-align: left;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 12px;
-  padding: 0.55rem 0.75rem;
+  background: #F5E4C4;
+  border: 1px solid rgba(129, 45, 53, 0.45);
+  border-radius: 14px;
+  padding: 0.65rem 0.85rem;
   font-size: 0.88rem;
+  font-family: 'Open Sans', sans-serif;
   cursor: pointer;
-  color: var(--text);
+  color: #0E0D15;
   transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
-}
-.demo-btn:hover { border-color: #34D399; background: rgba(110, 231, 183, 0.12); transform: translateY(-1px); }
-.demo-btn:active { transform: translateY(1px) scale(0.99); }
-code { background: rgba(255, 255, 255, 0.12); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85rem; color: #DDEAE1; }
-
-@media (max-width: 700px) {
-  .layout { flex-direction: column; }
-  .sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); }
-  .main { padding: 1rem; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .aurora-blob, .content, .login-card { animation: none; }
-  .card, .stat-card, .btn, .nav-link { transition: none; }
-}
-
-/* ------------------------------------------------------------------ */
-/*  Polish pass (Oct 2026) — same identity, refined, not replaced.    */
-/*  Dark frosted forest glass + emerald glow, with: tighter typography,   */
-/*  calmer spacing, softer hover/focus, spinner + empty states.       */
-/*  Performance: transform/opacity/border-color only in transitions;  */
-/*  no animated blur, no layout-shifting hover. Text stays on dark    */
-/*  glass panels, so contrast is unchanged (and never lightened).     */
-/* ------------------------------------------------------------------ */
-
-:root {
-  --text: #F2F7F3;
-  --muted: #C2D6C9;
-  --radius: 20px;
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-body {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.6;
-  letter-spacing: -0.005em;
-  text-rendering: optimizeLegibility;
-}
-
-h1 { font-size: 2rem; line-height: 1.15; margin-bottom: 0.35rem; }
-h2 { font-size: 1.2rem; font-weight: 700; margin: 1.75rem 0 0.85rem; }
-.content > p.muted:first-of-type, .login-subtitle { font-size: 0.98rem; color: var(--muted); }
-
-/* Smoother, calmer motion everywhere (still transform/opacity only). */
-.card, .stat-card, .btn, .nav-link, .demo-btn, input, select {
   transition-timing-function: var(--ease);
 }
-.card:hover, .stat-card:hover { transform: translateY(-2px); }
-.card, .stat-card { border-radius: var(--radius); }
+.demo-btn:hover { border-color: #812D35; background: rgba(245, 178, 151, 0.35); transform: translateY(-1px); }
+.demo-btn:active { transform: translateY(1px) scale(0.99); }
+code { background: #F5B297; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85rem; color: #0E0D15; }
 
-/* Visible keyboard focus — distinct from mouse hover, never removed. */
-.btn:focus-visible, .nav-link:focus-visible, .demo-btn:focus-visible,
-input:focus-visible, select:focus-visible, a:focus-visible {
-  outline: 2px solid #A7F3D0;
-  outline-offset: 3px;
-  box-shadow: 0 0 0 5px rgba(52, 211, 153, 0.30);
-}
-
-/* Buttons: inline-flex so spinner + label align; disabled stays legible. */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
-.btn:disabled { cursor: wait; }
-.btn-primary { letter-spacing: 0.01em; }
-
-/* Forms: roomier fields, clearer labels, steadier focus ring. */
-label { gap: 0.45rem; font-weight: 600; }
-input, select { padding: 0.7rem 0.85rem; border-radius: 14px; }
-input:focus, select:focus { box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.35), 0 0 0 1px rgba(52, 211, 153, 0.6); }
-.form { gap: 0.9rem; }
-.form-grid { gap: 0.9rem; }
-
-/* Tables: sticky-feeling header tint, zebra-free but clearly separated
-   rows, and a softer hover that never washes text out. */
-.table { border-radius: var(--radius); }
-.table th {
-  background: rgba(110, 231, 183, 0.11);
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #DDEAE1;
-  padding: 0.8rem 0.9rem;
-}
-.table td { padding: 0.8rem 0.9rem; }
-.table tbody tr:hover { background: rgba(110, 231, 183, 0.08); }
-
-/* Sidebar: active link gets a left glow bar; nav is easier to scan. */
-.nav-link { position: relative; padding: 0.7rem 0.9rem; border-radius: 14px; }
-.nav-link.active::before {
-  content: '';
-  position: absolute; left: -1rem; top: 22%; bottom: 22%; width: 3px;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #A7F3D0, #34D399);
-  box-shadow: 0 0 12px rgba(52, 211, 153, 0.8);
-}
-.brand-title { letter-spacing: 2px; }
-.user-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 14px; margin-bottom: 0.75rem; }
-
-/* Stat cards: value + label rhythm, accent bar softened at the ends. */
-.stat-card { padding: 1.25rem 1.35rem; }
-.stat-card::before { border-radius: 4px 0 0 4px; }
-.stat-value { font-size: 2rem; }
-.stat-label { font-size: 0.88rem; line-height: 1.45; }
-
-/* Badges: slightly larger touch target, crisper text. */
-.badge { padding: 0.22rem 0.7rem; letter-spacing: 0.01em; }
-
-/* Loading + empty states (shared by every page). */
+/* ---------------- Loading + empty states -------------------------- */
 .loading {
   display: flex; align-items: center; gap: 0.75rem;
-  padding: 2.5rem 1rem; color: var(--muted); font-size: 0.95rem;
+  padding: 2.5rem 1rem; color: var(--muted-on-dark); font-size: 0.95rem;
 }
 .spinner {
   width: 22px; height: 22px; flex: none;
   border-radius: 50%;
-  border: 2.5px solid rgba(255, 255, 255, 0.18);
-  border-top-color: #34D399;
+  border: 2.5px solid rgba(245, 228, 196, 0.25);
+  border-top-color: #F5B297;
   animation: spin 0.8s linear infinite;
 }
 .spinner-sm { width: 16px; height: 16px; border-width: 2px; }
+.btn-primary .spinner { border-color: rgba(245, 228, 196, 0.35); border-top-color: #F5E4C4; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .empty-state {
-  border: 1px dashed rgba(255, 255, 255, 0.22);
+  border: 1px dashed #812D35;
   border-radius: 16px;
   padding: 1.75rem 1.25rem;
   margin: 1rem 0;
   text-align: center;
-  background: rgba(255, 255, 255, 0.04);
+  background: #F5E4C4;
+  color: #0E0D15;
 }
 .empty-state p { margin: 0.25rem 0; }
-.empty-state p:first-child { color: #DDEAE1; font-weight: 600; }
-
-/* Login: gradient-ring card, centred mark, calmer demo list. */
-.login-card {
-  padding: 2.5rem 2.5rem 2.25rem;
-  position: relative;
-  border-radius: 24px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(110, 231, 183, 0.18), var(--glass-inset);
-}
-.login-mark {
-  width: 56px; height: 56px; border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.05rem; font-weight: 800; letter-spacing: 1.5px; color: #04150D;
-  background: linear-gradient(135deg, #059669, #10B981 55%, #34D399);
-  box-shadow: 0 10px 28px rgba(5, 150, 105, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  margin-bottom: 1.25rem;
-}
-.login-card h1 { font-size: 1.65rem; }
-.login-subtitle { margin-bottom: 1.5rem; }
-.demo-box { margin-top: 1.75rem; }
-.demo-btn { border-radius: 14px; padding: 0.65rem 0.85rem; }
+.empty-state p:first-child { color: #812D35; font-weight: 600; }
 
 /* Visually-hidden but screen-reader-readable: used for the tabular
    equivalent of each SVG chart (see components/Charts.jsx). */
@@ -588,25 +593,7 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.35), 0 0 
   white-space: nowrap;
 }
 
-/* Alerts animate in gently instead of snapping. */
-.alert, .conflict-box { animation: page-in 0.35s var(--ease) both; }
-
-@media (max-width: 700px) {
-  h1 { font-size: 1.6rem; }
-  .main { padding: 1.25rem 1rem; }
-  .login-card { padding: 1.75rem 1.5rem; }
-  .table th, .table td { padding: 0.65rem 0.7rem; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spinner { animation: none; border-top-color: rgba(255, 255, 255, 0.6); }
-  .alert, .conflict-box { animation: none; }
-}
-
-/* ---------------- Phase A additions: charts + exports + generator --- */
-/* New UI reuses only existing tokens: near-white #F2F7F3 and sage
-   #C2D6C9 text on dark glass, emerald fills, semantic red for absent.
-   No blue/purple/violet/indigo/cyan anywhere. */
+/* ---------------- Charts + exports + generator -------------------- */
 .chart-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -614,27 +601,17 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.35), 0 0 
   margin: 1.25rem 0;
 }
 .chart-card { margin: 0; }
-.chart-card h3 { margin: 0 0 0.35rem; color: #F0FAF4; font-size: 1.05rem; }
+.chart-card h3 { margin: 0 0 0.35rem; color: #812D35; font-size: 1.05rem; }
 .chart-card p { margin: 0.35rem 0; }
-.chart-svg { width: 100%; height: auto; display: block; }
-.chart-legend { display: flex; gap: 0.5rem; align-items: center; color: #C2D6C9; font-size: 0.88rem; }
-.legend-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
-.legend-present { background: #34D399; }
-.legend-absent { background: #F87171; }
+.chart-svg { width: 100%; height: auto; display: block; font-family: 'Open Sans', sans-serif; }
+.chart-legend { display: flex; gap: 0.5rem; align-items: center; color: #934372; font-size: 0.88rem; }
+.legend-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 4px; border: 1px solid #812D35; }
+.legend-present { background: #F5B297; }
+.legend-absent { background: #812D35; }
 .export-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
 .export-row .btn { align-self: center; }
 
-/* ------------------------------------------------------------------ */
-/*  Phase A polish — mobile responsiveness + table scrolling.         */
-/*  Green liquid-glass tokens only (forest/emerald/mint); no new      */
-/*  colours, no new text/background pairs beyond the toggle below.    */
-/* ------------------------------------------------------------------ */
-
-/* Scrollable tables: the table keeps a readable minimum width and
-   scrolls inside its own container instead of squeezing columns or
-   pushing the whole page wider than the viewport. The wrapper keeps
-   the card margin; the table inside drops its own margin so the
-   glass panel does not double-space. */
+/* ---------------- Mobile / scrolling (preserved behaviour) -------- */
 .table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -642,22 +619,22 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.35), 0 0 
   border-radius: 20px;
 }
 .table-wrap .table { margin: 0; min-width: 640px; }
-.table-wrap:focus-visible { outline: 2px solid #A7F3D0; outline-offset: 3px; }
+.table-wrap:focus-visible { outline: 2px solid #F5B297; outline-offset: 3px; }
+.card .table-wrap:focus-visible { outline: 2px solid #812D35; outline-offset: 3px; }
 
-/* Hamburger toggle: hidden on desktop, green glass on phones. */
 .nav-toggle { display: none; }
 
 @media (max-width: 700px) {
-  /* Sticky compact sidebar header: brand + toggle stay reachable
-     after scrolling; the nav list and footer are hidden until the
-     toggle opens them (sidebar carries .nav-open, see App.jsx). */
+  .layout { flex-direction: column; }
   .sidebar {
-    position: sticky;
-    top: 0;
-    z-index: 20;
+    width: 100%; height: auto; position: sticky; top: 0; z-index: 20;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border);
+    border-right: none; border-bottom: 1px solid var(--border);
   }
+  .main { padding: 1.25rem 1rem; overflow-x: hidden; }
+  h1 { font-size: 1.6rem; }
+  .login-card { padding: 1.75rem 1.5rem; }
+  .table th, .table td { padding: 0.65rem 0.7rem; }
   .sidebar-head { display: flex; align-items: center; gap: 0.75rem; }
   .sidebar-head .brand { flex: 1; padding: 0; border-bottom: none; }
   .sidebar-head .brand-sub { display: none; }
@@ -671,37 +648,25 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.35), 0 0 
     padding: 0.5rem 0.7rem;
     font-size: 1.15rem;
     line-height: 1;
-    color: #F2F7F3;
-    background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: #F5E4C4;
+    background: rgba(129, 45, 53, 0.45);
+    border: 1px solid rgba(195, 136, 169, 0.45);
     border-radius: 12px;
     cursor: pointer;
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
   }
-  .nav-toggle:hover { background: rgba(110, 231, 183, 0.14); }
+  .nav-toggle:hover { background: rgba(245, 178, 151, 0.20); }
   .sidebar:not(.nav-open) .nav,
   .sidebar:not(.nav-open) .sidebar-footer { display: none; }
-  /* Open menu taller than a short landscape viewport still stays
-     reachable: the sidebar itself scrolls rather than trapping its
-     footer below the fold. */
   .sidebar.nav-open { max-height: 100vh; max-height: 100dvh; overflow-y: auto; }
   .sidebar.nav-open .nav { margin-top: 0.75rem; }
   .sidebar.nav-open .sidebar-footer { margin-top: 0.75rem; }
   .nav-link.active::before { left: -1rem; }
-
-  /* Page never scrolls sideways: wide content scrolls inside its
-     own .table-wrap / chart container instead. */
-  .main { overflow-x: hidden; padding: 1.25rem 1rem; }
   .content { min-width: 0; }
-
-  /* Forms stack to one usable column; 16px fields so phones do not
-     zoom the viewport on focus; buttons meet a 44px touch target. */
   .form-grid { grid-template-columns: 1fr; }
   input, select { font-size: 1rem; }
   .btn { min-height: 44px; padding: 0.7rem 1.1rem; }
-  /* Small buttons and demo buttons meet the same 44px touch target
-     on mobile (code-level only — not visually confirmed). */
   .btn-sm { min-height: 44px; }
   .demo-btn { min-height: 44px; }
   .card { padding: 1.25rem 1rem; }
@@ -709,13 +674,8 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.35), 0 0 
   .filter-row > label { flex: 1 1 auto; }
   .export-row { width: 100%; }
   .review-box input { flex: 1 1 120px; width: auto; }
-
-  /* Cards + charts stack; stat cards stay two-up where they fit. */
   .stat-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
   .chart-grid { grid-template-columns: 1fr; }
-
-  /* Tables scroll inside .table-wrap; the old whole-page scroll path
-     (.main overflow-x) no longer needs to carry them. */
   .table-wrap .table { min-width: 600px; }
 }
 
@@ -723,4 +683,11 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.35), 0 0 
   .stat-grid { grid-template-columns: 1fr 1fr; }
   .login-card { padding: 1.5rem 1.25rem; }
   h1 { font-size: 1.45rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob, .content, .login-card { animation: none; }
+  .card, .stat-card, .btn, .nav-link { transition: none; }
+  .spinner { animation: none; border-top-color: rgba(245, 228, 196, 0.6); }
+  .alert, .conflict-box { animation: none; }
 }

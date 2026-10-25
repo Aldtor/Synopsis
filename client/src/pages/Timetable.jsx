@@ -49,6 +49,33 @@ export default function Timetable() {
   const [genError, setGenError] = useState('')
   const [genNotice, setGenNotice] = useState('')
   const [genBusy, setGenBusy] = useState(false)
+  // Leave warnings returned by the generator (preview + confirm).
+  // Display-only: warning-only per the backend — nobody is excluded
+  // from generation on the basis of a warning. Absent/empty = no UI.
+  const [confirmWarnings, setConfirmWarnings] = useState([])
+
+  function formatLeaveWarning(w) {
+    const who = `${w.name || '—'}${w.facultyId ? ` (${w.facultyId})` : ''}`
+    const fmt = (d) => {
+      if (!d) return ''
+      const parsed = new Date(d)
+      return Number.isNaN(parsed.getTime()) ? String(d) : parsed.toLocaleDateString()
+    }
+    const range = w.fromDate || w.toDate ? ` — ${fmt(w.fromDate)} to ${fmt(w.toDate)}` : ''
+    return `${who} — ${w.type || 'leave'}${range}`
+  }
+
+  function LeaveWarnings({ warnings }) {
+    if (!Array.isArray(warnings) || warnings.length === 0) return null
+    return (
+      <div className="alert warning">
+        <strong>Leave warnings (warning only — these faculty are not excluded from generation):</strong>
+        <ul>
+          {warnings.map((w, i) => <li key={i}>{formatLeaveWarning(w)}</li>)}
+        </ul>
+      </div>
+    )
+  }
 
   const timetableColumns = [
     { key: 'day', label: 'Day', width: 1 },
@@ -99,6 +126,7 @@ export default function Timetable() {
     setGenError('')
     setGenNotice('')
     setPreview(null)
+    setConfirmWarnings([])
     const semErr = semesterError(genSem)
     if (semErr) {
       setGenError(semErr)
@@ -129,6 +157,7 @@ export default function Timetable() {
         body: { department: preview.department, semester: preview.semester, section: preview.section, entries: preview.entries },
       })
       setGenNotice(`Saved ${data.savedCount} timetable entries.${data.skippedCount > 0 ? ` ${data.skippedCount} previewed entries were skipped at confirm time because they now conflict.` : ''}`)
+      setConfirmWarnings(Array.isArray(data.leaveWarnings) ? data.leaveWarnings : [])
       setPreview(null)
       load(day)
       loadBlocked()
@@ -370,6 +399,7 @@ export default function Timetable() {
           {loadError && <div className="alert error">{loadError} <button type="button" className="btn btn-sm" onClick={loadDropdowns}>Retry</button></div>}
           {genError && <div className="alert error">{genError}</div>}
           {genNotice && <div className="alert success">{genNotice}</div>}
+          <LeaveWarnings warnings={confirmWarnings} />
           <button className="btn btn-primary" disabled={genBusy}>{genBusy ? 'Working…' : 'Preview'}</button>
           {preview && (
             <div>
@@ -388,6 +418,7 @@ export default function Timetable() {
                   </tbody>
                 </table></div>
               )}
+              <LeaveWarnings warnings={preview.leaveWarnings} />
               {preview.skipped.length > 0 && (
                 <div className="alert warning">
                   <strong>Skipped slots (not saved):</strong>
