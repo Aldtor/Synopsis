@@ -7,6 +7,7 @@ import Faculty from './models/Faculty.js';
 import Attendance from './models/Attendance.js';
 import Leave from './models/Leave.js';
 import Timetable from './models/Timetable.js';
+import ConflictLog from './models/ConflictLog.js';
 
 const PASSWORD = 'password123';
 
@@ -40,7 +41,17 @@ const DESIGNATIONS = ['Professor', 'Associate Professor', 'Assistant Professor',
 const QUALIFICATIONS = ['Ph.D.', 'M.Tech.', 'M.Tech.', 'M.E.', 'Ph.D.'];
 
 export async function seed() {
-  await mongoose.connection.dropDatabase();
+  // Clear per collection instead of dropDatabase(): the Atlas DB user
+  // (readWriteAnyDatabase) is not allowed to drop the database, but
+  // deleteMany on each collection is permitted and sufficient here,
+  // since seed() only runs when the User collection is empty.
+  await User.deleteMany({});
+  await Department.deleteMany({});
+  await Faculty.deleteMany({});
+  await Attendance.deleteMany({});
+  await Leave.deleteMany({});
+  await Timetable.deleteMany({});
+  await ConflictLog.deleteMany({});
 
   const admin = await User.create({ name: 'System Administrator', email: 'admin@bias.ac.in', password: PASSWORD, role: 'admin' });
 
