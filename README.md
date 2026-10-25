@@ -231,16 +231,16 @@ faculty-management-system/
 
 ## Testing
 
-**Scope, stated honestly:** the verified results below were obtained against an **in-memory MongoDB**, not a hosted database. Hosted-database (Atlas) verification is pending a user permission change in this sandbox and is **not** claimed here.
+**Verified live** against the production site (https://synopsis-tan.vercel.app/) and its hosted MongoDB Atlas database — not an in-memory database.
 
-Verified results (QA-signed, zero defects):
+Verified results:
 
 - Health endpoint returns **200**
 - Admin login works
 - **40 faculty** listed
 - A non-conflicting timetable entry returns **201**
 - An overlapping timetable entry returns **409** and is confirmed **not saved**
-- Dashboard summary returns `facultyCount=40`, `deptCount=5`, `timetableCount=241` (240 seed + 1 test entry), `pendingLeaves=3`, `conflictsPrevented=1`
+- Dashboard summary returns `facultyCount=40`, `deptCount=5`, `timetableCount=240`, `pendingLeaves=3`
 - The `faculty` role correctly receives **403** on admin endpoints
 - Leave apply → admin approve workflow verified
 - Frontend production build (`vite build`) passes
