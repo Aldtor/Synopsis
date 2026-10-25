@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+server/node_modules/
+client/node_modules/
+
+# Environment files (never commit real credentials)
+.env
+.env.local
+.env.*.local
+server/.env
+client/.env
+# NOTE: .env.example files are intentionally NOT listed here — they contain
+# no secrets and are meant to be committed. The patterns above match only
+# real .env files, not .env.example.
+
+# Build output
+client/dist/
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Muse / GitHub snapshot sync records
+*.muse-github-snapshot-sync.json
+**/*.muse-github-snapshot-sync.json
+
+# Miscellaneous local files
+*.pem
+*.key
