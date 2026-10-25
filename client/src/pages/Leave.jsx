@@ -91,8 +91,8 @@ export default function Leave() {
           </select>
         </label>
       </div>
-      {loading ? <p className="muted">Loading…</p> : rows.length === 0 ? (
-        <p className="muted">No leave requests found.</p>
+      {loading ? <div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading…</span></div> : rows.length === 0 ? (
+        <div className="empty-state"><p>No leave requests found.</p></div>
       ) : (
         <table className="table">
           <thead>

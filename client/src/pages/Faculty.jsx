@@ -81,7 +81,7 @@ export default function Faculty() {
           <button className="btn btn-primary">Add Faculty</button>
         </form>
       )}
-      {loading ? <p className="muted">Loading…</p> : (
+      {loading ? <div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading…</span></div> : (
         <table className="table">
           <thead>
             <tr><th>Faculty ID</th><th>Name</th><th>Department</th><th>Designation</th><th>Qualification</th><th>Subjects</th>{isAdmin && <th></th>}</tr>

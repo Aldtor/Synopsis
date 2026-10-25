@@ -135,8 +135,8 @@ export default function Timetable() {
           </select>
         </label>
       </div>
-      {loading ? <p className="muted">Loading…</p> : rows.length === 0 ? (
-        <p className="muted">No timetable entries found.</p>
+      {loading ? <div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading…</span></div> : rows.length === 0 ? (
+        <div className="empty-state"><p>No timetable entries found.</p></div>
       ) : (
         <table className="table">
           <thead>
@@ -162,7 +162,7 @@ export default function Timetable() {
         <div>
           <h2>Blocked Attempts</h2>
           {blocked.length === 0 ? (
-            <p className="muted">No blocked timetable attempts recorded.</p>
+            <div className="empty-state"><p>No blocked timetable attempts recorded.</p></div>
           ) : (
             <table className="table">
               <thead>

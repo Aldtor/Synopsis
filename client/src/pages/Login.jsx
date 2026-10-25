@@ -33,8 +33,9 @@ export default function Login() {
   return (
     <div className="login-wrap">
       <div className="login-card">
+        <div className="login-mark" aria-hidden="true">FMS</div>
         <h1>Faculty Management System</h1>
-        <p className="muted">Birla Institute of Applied Sciences, Bhimtal</p>
+        <p className="muted login-subtitle">Birla Institute of Applied Sciences, Bhimtal</p>
         <form onSubmit={handleSubmit} className="form">
           <label>
             Email
@@ -46,7 +47,7 @@ export default function Login() {
           </label>
           {error && <div className="alert error">{error}</div>}
           <button className="btn btn-primary btn-block" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? (<><span className="spinner spinner-sm" aria-hidden="true" /> Signing in…</>) : 'Sign in'}
           </button>
         </form>
         <div className="demo-box">

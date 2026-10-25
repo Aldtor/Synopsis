@@ -383,3 +383,152 @@ code { background: rgba(255, 255, 255, 0.12); padding: 0.1rem 0.35rem; border-ra
   .aurora-blob, .content, .login-card { animation: none; }
   .card, .stat-card, .btn, .nav-link { transition: none; }
 }
+
+/* ------------------------------------------------------------------ */
+/*  Polish pass (Oct 2026) — same identity, refined, not replaced.    */
+/*  Dark frosted glass + plasma gradient, with: tighter typography,   */
+/*  calmer spacing, softer hover/focus, spinner + empty states.       */
+/*  Performance: transform/opacity/border-color only in transitions;  */
+/*  no animated blur, no layout-shifting hover. Text stays on dark    */
+/*  glass panels, so contrast is unchanged (and never lightened).     */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --text: #f2f5fa;
+  --muted: #c0cadb;
+  --radius: 20px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+  text-rendering: optimizeLegibility;
+}
+
+h1 { font-size: 2rem; line-height: 1.15; margin-bottom: 0.35rem; }
+h2 { font-size: 1.2rem; font-weight: 700; margin: 1.75rem 0 0.85rem; }
+.content > p.muted:first-of-type, .login-subtitle { font-size: 0.98rem; color: var(--muted); }
+
+/* Smoother, calmer motion everywhere (still transform/opacity only). */
+.card, .stat-card, .btn, .nav-link, .demo-btn, input, select {
+  transition-timing-function: var(--ease);
+}
+.card:hover, .stat-card:hover { transform: translateY(-2px); }
+.card, .stat-card { border-radius: var(--radius); }
+
+/* Visible keyboard focus — distinct from mouse hover, never removed. */
+.btn:focus-visible, .nav-link:focus-visible, .demo-btn:focus-visible,
+input:focus-visible, select:focus-visible, a:focus-visible {
+  outline: 2px solid #c7d2fe;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(129, 140, 248, 0.30);
+}
+
+/* Buttons: inline-flex so spinner + label align; disabled stays legible. */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.btn:disabled { cursor: wait; }
+.btn-primary { letter-spacing: 0.01em; }
+
+/* Forms: roomier fields, clearer labels, steadier focus ring. */
+label { gap: 0.45rem; font-weight: 600; }
+input, select { padding: 0.7rem 0.85rem; border-radius: 14px; }
+input:focus, select:focus { box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35), 0 0 0 1px rgba(165, 180, 252, 0.6); }
+.form { gap: 0.9rem; }
+.form-grid { gap: 0.9rem; }
+
+/* Tables: sticky-feeling header tint, zebra-free but clearly separated
+   rows, and a softer hover that never washes text out. */
+.table { border-radius: var(--radius); }
+.table th {
+  background: rgba(255, 255, 255, 0.11);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #dbe4f0;
+  padding: 0.8rem 0.9rem;
+}
+.table td { padding: 0.8rem 0.9rem; }
+.table tbody tr:hover { background: rgba(255, 255, 255, 0.055); }
+
+/* Sidebar: active link gets a left glow bar; nav is easier to scan. */
+.nav-link { position: relative; padding: 0.7rem 0.9rem; border-radius: 14px; }
+.nav-link.active::before {
+  content: '';
+  position: absolute; left: -1rem; top: 22%; bottom: 22%; width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #a5b4fc, #67e8f9);
+  box-shadow: 0 0 12px rgba(129, 140, 248, 0.8);
+}
+.brand-title { letter-spacing: 2px; }
+.user-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 14px; margin-bottom: 0.75rem; }
+
+/* Stat cards: value + label rhythm, accent bar softened at the ends. */
+.stat-card { padding: 1.25rem 1.35rem; }
+.stat-card::before { border-radius: 4px 0 0 4px; }
+.stat-value { font-size: 2rem; }
+.stat-label { font-size: 0.88rem; line-height: 1.45; }
+
+/* Badges: slightly larger touch target, crisper text. */
+.badge { padding: 0.22rem 0.7rem; letter-spacing: 0.01em; }
+
+/* Loading + empty states (shared by every page). */
+.loading {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 2.5rem 1rem; color: var(--muted); font-size: 0.95rem;
+}
+.spinner {
+  width: 22px; height: 22px; flex: none;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 255, 255, 0.18);
+  border-top-color: #a5b4fc;
+  animation: spin 0.8s linear infinite;
+}
+.spinner-sm { width: 16px; height: 16px; border-width: 2px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-state {
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 16px;
+  padding: 1.75rem 1.25rem;
+  margin: 1rem 0;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+}
+.empty-state p { margin: 0.25rem 0; }
+.empty-state p:first-child { color: #e2e8f0; font-weight: 600; }
+
+/* Login: gradient-ring card, centred mark, calmer demo list. */
+.login-card {
+  padding: 2.5rem 2.5rem 2.25rem;
+  position: relative;
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(165, 180, 252, 0.18), var(--glass-inset);
+}
+.login-mark {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.05rem; font-weight: 800; letter-spacing: 1.5px; color: #fff;
+  background: linear-gradient(135deg, #6366f1, #a855f7 55%, #06b6d4);
+  box-shadow: 0 10px 28px rgba(139, 92, 246, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  margin-bottom: 1.25rem;
+}
+.login-card h1 { font-size: 1.65rem; }
+.login-subtitle { margin-bottom: 1.5rem; }
+.demo-box { margin-top: 1.75rem; }
+.demo-btn { border-radius: 14px; padding: 0.65rem 0.85rem; }
+
+/* Alerts animate in gently instead of snapping. */
+.alert, .conflict-box { animation: page-in 0.35s var(--ease) both; }
+
+@media (max-width: 700px) {
+  h1 { font-size: 1.6rem; }
+  .main { padding: 1.25rem 1rem; }
+  .login-card { padding: 1.75rem 1.5rem; }
+  .table th, .table td { padding: 0.65rem 0.7rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; border-top-color: rgba(255, 255, 255, 0.6); }
+  .alert, .conflict-box { animation: none; }
+}

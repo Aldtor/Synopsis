@@ -83,8 +83,8 @@ export default function Attendance() {
           <input type="date" value={date} onChange={(e) => changeDate(e.target.value)} />
         </label>
       </div>
-      {loading ? <p className="muted">Loading…</p> : rows.length === 0 ? (
-        <p className="muted">No attendance records for this date.</p>
+      {loading ? <div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading…</span></div> : rows.length === 0 ? (
+        <div className="empty-state"><p>No attendance records for this date.</p></div>
       ) : (
         <table className="table">
           <thead>

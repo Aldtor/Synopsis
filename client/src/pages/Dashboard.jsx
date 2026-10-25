@@ -12,7 +12,7 @@ export default function Dashboard() {
   }, [])
 
   if (error) return <div><h1>Dashboard</h1><div className="alert error">{error}</div></div>
-  if (!data) return <div><h1>Dashboard</h1><p className="muted">Loading…</p></div>
+  if (!data) return <div><h1>Dashboard</h1><div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading dashboard…</span></div></div>
 
   const cards = [
     { label: 'Faculty Members', value: data.facultyCount },
@@ -37,7 +37,7 @@ export default function Dashboard() {
       </div>
       <h2>Recently Blocked Conflicts</h2>
       {!data.recentConflicts || data.recentConflicts.length === 0 ? (
-        <p className="muted">No blocked conflicts recorded.</p>
+        <div className="empty-state"><p>No blocked conflicts recorded.</p><p className="muted small">Conflicts blocked by timetable validation will appear here.</p></div>
       ) : (
         <table className="table">
           <thead>

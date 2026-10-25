@@ -34,12 +34,18 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 if (process.env.NODE_ENV !== 'test') {
+  // Runs on local `npm start` AND on Vercel cold start (top-level await):
+  // the DB connection + first-run seeding must happen in both paths.
+  // Only the HTTP listener is local-only — a Vercel serverless function
+  // must never call app.listen(); Vercel invokes the exported app itself.
   await connectDB();
   // First run: seed the fictional demo dataset from the synopsis methodology.
   if ((await User.countDocuments()) === 0) {
     await seed();
   }
-  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  if (!process.env.VERCEL) {
+    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  }
 }
 
 export default app;

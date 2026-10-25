@@ -1,0 +1,14 @@
+{
+  "name": "faculty-management-system",
+  "private": true,
+  "type": "module",
+  "description": "Root package for Vercel deployment: installs the production dependencies used by the api/ serverless function (the Express backend). Local workflows are unchanged — run the server from server/ and the client from client/.",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.5.2"
+  }
+}
