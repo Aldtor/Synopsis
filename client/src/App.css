@@ -3,23 +3,57 @@
 /*  Pure CSS. No API, route, role-gating or data-flow changes here.    */
 /*  Readability rule: panels are DARK-tinted glass (not pale glass),   */
 /*  so near-white text stays high-contrast over the moving backdrop.   */
+/*                                                                    */
+/*  PALETTE (design-polish pass, Oct 2026)                            */
+/*  --bg            #0a0f2a  Deep navy/indigo base (was flat #050510) */
+/*                   Page background, aurora layer, modal scrim tint. */
+/*  --card          rgba(24,30,68,0.60)  Indigo-tinted glass panels    */
+/*                   Cards, tables, stat cards, login card.           */
+/*  --sidebar       rgba(11,15,43,0.68)  Darker indigo-navy glass      */
+/*                   Sidebar only (deeper than cards, for hierarchy).*/
+/*  --text          #f2f5fa  Near-white body text (on dark glass).    */
+/*  --muted         #c0cadb  Softer secondary text (labels, hints).   */
+/*  --border        rgba(165,180,252,0.20)  Indigo-tinted card borders*/
+/*  Cool flow (aurora, headings, brand, nav-active, focus, info):     */
+/*    violet #7c3aed / #818cf8 / #6366f1, blue #2563eb / #60a5fa,     */
+/*    cyan #06b6d4 / #67e8f9. Pink #ec4899 is now a minor accent      */
+/*    only (small blob, 0.20 opacity) — never a main flow colour.     */
+/*  --accent (warm) #fbbf24 gold, deep #f59e0b — SOLID fills ONLY:    */
+/*                   primary buttons + key numbers (stat values).    */
+/*                   Never used for a status tint or badge.           */
+/*  SEMANTIC STATES — exactly one colour per state, everywhere:       */
+/*    success #4ade80 (text #bbf7d0 on dark green tint)               */
+/*    warning #fb923c amber-ORANGE (text #fdba74 on dark orange      */
+/*      tint) — deliberately shifted orange from the gold accent so   */
+/*      warning and accent can never be confused; warning appears     */
+/*      ONLY as a tinted badge/alert, accent ONLY as a solid fill.    */
+/*    danger  #f87171 / #dc2626 (text #fecaca on dark red tint;       */
+/*      conflict box keeps its dark-red banner + red left bar)        */
+/*    info    #60a5fa (text #bfdbfe on dark blue tint)                */
+/*  Focus rings stay cool indigo (#c7d2fe), never gold, so keyboard   */
+/*  focus is always distinguishable from a gold primary action.       */
 /* ------------------------------------------------------------------ */
 
 :root {
   --primary: #818cf8;
   --primary-dark: #6366f1;
+  --accent: #fbbf24;
+  --accent-deep: #f59e0b;
+  --accent-text: #201503;
   --danger: #f87171;
   --danger-dark: #dc2626;
   --success: #4ade80;
-  --bg: #050510;
-  --card: rgba(21, 27, 54, 0.58);
-  --text: #f1f5f9;
-  --muted: #b6c2d2;
-  --border: rgba(255, 255, 255, 0.16);
-  --sidebar: rgba(10, 13, 32, 0.62);
+  --warning: #fb923c;
+  --info: #60a5fa;
+  --bg: #0a0f2a;
+  --card: rgba(24, 30, 68, 0.60);
+  --text: #f2f5fa;
+  --muted: #c0cadb;
+  --border: rgba(165, 180, 252, 0.20);
+  --sidebar: rgba(11, 15, 43, 0.68);
   --sidebar-text: #cbd5e1;
-  --glass-shadow: 0 18px 40px rgba(0, 0, 0, 0.42), 0 2px 8px rgba(0, 0, 0, 0.28);
-  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  --glass-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.30), 0 0 24px rgba(99, 102, 241, 0.10);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(165, 180, 252, 0.06);
   color-scheme: dark;
 }
 
@@ -31,9 +65,9 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background:
-    radial-gradient(1200px 700px at 85% -10%, rgba(124, 58, 237, 0.28), transparent 60%),
-    radial-gradient(900px 600px at -10% 110%, rgba(6, 182, 212, 0.20), transparent 60%),
-    var(--bg);
+    radial-gradient(1200px 700px at 85% -10%, rgba(124, 58, 237, 0.24), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(6, 182, 212, 0.18), transparent 60%),
+    linear-gradient(180deg, #0d1336 0%, var(--bg) 45%, #080b22 100%);
   background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
@@ -56,7 +90,7 @@ body {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.55;
+  opacity: 0.50;
   will-change: transform, opacity;
 }
 .aurora-blob-1 {
@@ -67,18 +101,19 @@ body {
 .aurora-blob-2 {
   width: 44vw; height: 44vw; right: -10vw; top: 8vh;
   background: radial-gradient(circle at 50% 50%, #2563eb, transparent 70%);
+  opacity: 0.42;
   animation: aurora-drift-2 40s ease-in-out infinite alternate;
 }
 .aurora-blob-3 {
   width: 38vw; height: 38vw; left: 30vw; bottom: -18vw;
   background: radial-gradient(circle at 50% 50%, #06b6d4, transparent 70%);
-  opacity: 0.42;
+  opacity: 0.48;
   animation: aurora-drift-1 36s ease-in-out infinite alternate-reverse;
 }
 .aurora-blob-4 {
-  width: 30vw; height: 30vw; right: 22vw; bottom: 12vh;
+  width: 24vw; height: 24vw; right: 22vw; bottom: 12vh;
   background: radial-gradient(circle at 50% 50%, #ec4899, transparent 70%);
-  opacity: 0.38;
+  opacity: 0.20;
   animation: aurora-drift-2 28s ease-in-out infinite alternate-reverse;
 }
 @keyframes aurora-drift-1 {
@@ -105,7 +140,7 @@ h1 {
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
-h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #e2e8f0; letter-spacing: -0.01em; }
+h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #eef2ff; letter-spacing: -0.01em; }
 .muted { color: var(--muted); }
 .small { font-size: 0.85rem; }
 
@@ -163,7 +198,8 @@ h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #e2e8f0; letter-spacin
   border: 1px solid transparent;
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
-.nav-link:hover { background: rgba(255, 255, 255, 0.09); color: #fff; transform: translateX(2px); }
+.nav-link:hover { background: rgba(165, 180, 252, 0.12); color: #fff; transform: translateX(2px); }
+.nav-link:active { transform: translateX(1px) scale(0.99); }
 .nav-link.active {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.85), rgba(168, 85, 247, 0.75));
   color: #fff;
@@ -185,7 +221,7 @@ h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; color: #e2e8f0; letter-spacin
   margin: 1rem 0;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.card:hover { transform: translateY(-2px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), var(--glass-inset); }
+.card:hover { transform: translateY(-2px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), 0 0 28px rgba(99, 102, 241, 0.14), var(--glass-inset); }
 .card h2 { margin-top: 0; }
 .form-grid {
   display: grid;
@@ -210,7 +246,7 @@ input:focus, select:focus {
   background: rgba(255, 255, 255, 0.11);
   box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35);
 }
-select option { background: #1e293b; color: #f1f5f9; }
+select option { background: #131a3d; color: #f2f5fa; }
 
 /* ---------------- Buttons ----------------------------------------- */
 .btn {
@@ -223,20 +259,24 @@ select option { background: #1e293b; color: #f1f5f9; }
   align-self: flex-start;
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, background 0.2s ease;
 }
+.btn:active { transform: translateY(1px) scale(0.99); }
+/* Primary actions are the warm gold accent: dark text on gold keeps
+   contrast high, and gold appears nowhere else as a solid fill. */
 .btn-primary {
-  background: linear-gradient(135deg, #6366f1, #a855f7 55%, #06b6d4);
-  color: #fff;
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #201503;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(139, 92, 246, 0.60), inset 0 1px 0 rgba(255, 255, 255, 0.28); filter: brightness(1.08); }
-.btn-primary:active { transform: translateY(0); }
-.btn-primary:disabled { opacity: 0.6; cursor: default; transform: none; box-shadow: 0 8px 24px rgba(139, 92, 246, 0.30); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(245, 158, 11, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45); filter: brightness(1.05); }
+.btn-primary:active { transform: translateY(1px) scale(0.99); filter: brightness(0.97); }
+.btn-primary:disabled { opacity: 0.65; cursor: default; transform: none; box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25); }
 .btn-danger {
   background: linear-gradient(135deg, #ef4444, #be123c);
   color: #fff;
   box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 .btn-danger:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(239, 68, 68, 0.50); filter: brightness(1.08); }
+.btn-danger:active { transform: translateY(1px) scale(0.99); }
 .btn-outline {
   background: rgba(255, 255, 255, 0.07);
   color: #fff;
@@ -245,7 +285,8 @@ select option { background: #1e293b; color: #f1f5f9; }
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
-.btn-outline:hover { background: rgba(255, 255, 255, 0.14); transform: translateY(-1px); }
+.btn-outline:hover { background: rgba(165, 180, 252, 0.14); transform: translateY(-1px); }
+.btn-outline:active { transform: translateY(1px) scale(0.99); }
 .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.85rem; border-radius: 10px; }
 .btn-block { width: 100%; align-self: stretch; }
 
@@ -261,7 +302,7 @@ select option { background: #1e293b; color: #f1f5f9; }
 .table th, .table td { padding: 0.7rem 0.85rem; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.10); color: var(--text); }
 .table th { background: rgba(255, 255, 255, 0.09); font-weight: 600; color: #e2e8f0; letter-spacing: 0.01em; }
 .table tbody tr { transition: background 0.2s ease; }
-.table tbody tr:hover { background: rgba(255, 255, 255, 0.06); }
+.table tbody tr:hover { background: rgba(165, 180, 252, 0.08); }
 .table tbody tr:last-child td { border-bottom: none; }
 
 /* ---------------- Stats ------------------------------------------- */
@@ -281,10 +322,10 @@ select option { background: #1e293b; color: #f1f5f9; }
 .stat-card::before {
   content: '';
   position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-  background: linear-gradient(180deg, #818cf8, #e879f9, #22d3ee);
+  background: linear-gradient(180deg, #818cf8, #22d3ee);
 }
-.stat-card:hover { transform: translateY(-3px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), var(--glass-inset); }
-.stat-value { font-size: 1.9rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48), 0 0 28px rgba(99, 102, 241, 0.14), var(--glass-inset); }
+.stat-value { font-size: 1.9rem; font-weight: 800; color: #fbbf24; letter-spacing: -0.02em; }
 .stat-label { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
 
 /* ---------------- Alerts, badges, conflicts ------------------------ */
@@ -302,6 +343,19 @@ select option { background: #1e293b; color: #f1f5f9; }
   background: rgba(5, 46, 22, 0.72);
   color: #bbf7d0;
   border: 1px solid rgba(74, 222, 128, 0.50);
+}
+/* Warning = amber-ORANGE, not gold: tinted badge/alert only, so it can
+   never be mistaken for the gold primary accent (solid fills only). */
+.alert.warning {
+  background: rgba(62, 32, 5, 0.78);
+  color: #fdba74;
+  border: 1px solid rgba(251, 146, 60, 0.55);
+  box-shadow: 0 4px 18px rgba(234, 88, 12, 0.22);
+}
+.alert.info {
+  background: rgba(12, 32, 66, 0.78);
+  color: #bfdbfe;
+  border: 1px solid rgba(96, 165, 250, 0.55);
 }
 .conflict-box {
   background: rgba(69, 10, 10, 0.82);
@@ -326,7 +380,7 @@ select option { background: #1e293b; color: #f1f5f9; }
 }
 .badge-present, .badge-approved { background: rgba(22, 101, 52, 0.55); color: #bbf7d0; border-color: rgba(74, 222, 128, 0.45); }
 .badge-absent, .badge-rejected { background: rgba(127, 29, 29, 0.55); color: #fecaca; border-color: rgba(248, 113, 113, 0.45); }
-.badge-pending { background: rgba(113, 63, 18, 0.55); color: #fef08a; border-color: rgba(250, 204, 21, 0.45); }
+.badge-pending { background: rgba(62, 32, 5, 0.55); color: #fdba74; border-color: rgba(251, 146, 60, 0.50); }
 .badge-leave, .badge-half-day { background: rgba(30, 58, 138, 0.55); color: #bfdbfe; border-color: rgba(96, 165, 250, 0.45); }
 .filter-row { display: flex; gap: 1rem; align-items: flex-end; margin: 1rem 0 0; flex-wrap: wrap; }
 .review-box { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
@@ -336,7 +390,7 @@ select option { background: #1e293b; color: #f1f5f9; }
 .modal-overlay {
   position: fixed; inset: 0; z-index: 50;
   display: flex; align-items: center; justify-content: center; padding: 1rem;
-  background: rgba(3, 4, 18, 0.62);
+  background: rgba(7, 10, 34, 0.62);
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
 .modal-card { border-radius: 20px; padding: 1.75rem; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
@@ -370,7 +424,8 @@ select option { background: #1e293b; color: #f1f5f9; }
   color: var(--text);
   transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
-.demo-btn:hover { border-color: #a5b4fc; background: rgba(255, 255, 255, 0.12); transform: translateY(-1px); }
+.demo-btn:hover { border-color: #a5b4fc; background: rgba(165, 180, 252, 0.12); transform: translateY(-1px); }
+.demo-btn:active { transform: translateY(1px) scale(0.99); }
 code { background: rgba(255, 255, 255, 0.12); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85rem; color: #e2e8f0; }
 
 @media (max-width: 700px) {
@@ -442,15 +497,15 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35), 0 0
    rows, and a softer hover that never washes text out. */
 .table { border-radius: var(--radius); }
 .table th {
-  background: rgba(255, 255, 255, 0.11);
+  background: rgba(165, 180, 252, 0.11);
   font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #dbe4f0;
+  color: #e2e8f0;
   padding: 0.8rem 0.9rem;
 }
 .table td { padding: 0.8rem 0.9rem; }
-.table tbody tr:hover { background: rgba(255, 255, 255, 0.055); }
+.table tbody tr:hover { background: rgba(165, 180, 252, 0.08); }
 
 /* Sidebar: active link gets a left glow bar; nav is easier to scan. */
 .nav-link { position: relative; padding: 0.7rem 0.9rem; border-radius: 14px; }
