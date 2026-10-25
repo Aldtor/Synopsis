@@ -7,7 +7,7 @@
 
 A MERN-stack web application for managing faculty, departments, attendance, leave requests, and timetables at an academic institution — with **automated, rule-based timetable conflict detection** as its key feature. When a new timetable entry would double-book a faculty member or a classroom, the entry is blocked before it is saved, and the blocked attempt is logged and counted on the dashboard.
 
-> **No screenshots are included in this README** — none are available for this project, so none have been fabricated or hotlinked.
+See the [Screenshots](#screenshots) section below for the green liquid-glass theme in action.
 
 ## Features
 
@@ -22,6 +22,22 @@ A MERN-stack web application for managing faculty, departments, attendance, leav
 - **JWT authentication** — Login returns a JSON Web Token, sent as a `Bearer` token on subsequent requests. Passwords are hashed with bcryptjs.
 - **Premium liquid-glass UI** — Frosted-glass panels, an animated plasma/aurora gradient background, gradient headings, and glowing buttons.
   - *Honest note: the visual polish was verified by code review and a successful production build, not by a live-browser screenshot pass.*
+
+## Screenshots
+
+Green liquid-glass theme:
+
+![Login](docs/screenshots/login.png)
+*Login — green liquid-glass theme*
+
+![Dashboard](docs/screenshots/dashboard.png)
+*Dashboard — green liquid-glass theme*
+
+![Faculty](docs/screenshots/faculty.png)
+*Faculty — green liquid-glass theme*
+
+![Timetable](docs/screenshots/timetable.png)
+*Timetable — green liquid-glass theme*
 
 ## How conflict detection works
 
