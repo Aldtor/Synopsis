@@ -605,3 +605,122 @@ input:focus, select:focus { box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.35), 0 0 
   .spinner { animation: none; border-top-color: rgba(255, 255, 255, 0.6); }
   .alert, .conflict-box { animation: none; }
 }
+
+/* ---------------- Phase A additions: charts + exports + generator --- */
+/* New UI reuses only existing tokens: near-white #F2F7F3 and sage
+   #C2D6C9 text on dark glass, emerald fills, semantic red for absent.
+   No blue/purple/violet/indigo/cyan anywhere. */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+.chart-card { margin: 0; }
+.chart-card h3 { margin: 0 0 0.35rem; color: #F0FAF4; font-size: 1.05rem; }
+.chart-card p { margin: 0.35rem 0; }
+.chart-svg { width: 100%; height: auto; display: block; }
+.chart-legend { display: flex; gap: 0.5rem; align-items: center; color: #C2D6C9; font-size: 0.88rem; }
+.legend-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
+.legend-present { background: #34D399; }
+.legend-absent { background: #F87171; }
+.export-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.export-row .btn { align-self: center; }
+
+/* ------------------------------------------------------------------ */
+/*  Phase A polish — mobile responsiveness + table scrolling.         */
+/*  Green liquid-glass tokens only (forest/emerald/mint); no new      */
+/*  colours, no new text/background pairs beyond the toggle below.    */
+/* ------------------------------------------------------------------ */
+
+/* Scrollable tables: the table keeps a readable minimum width and
+   scrolls inside its own container instead of squeezing columns or
+   pushing the whole page wider than the viewport. The wrapper keeps
+   the card margin; the table inside drops its own margin so the
+   glass panel does not double-space. */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1rem 0;
+  border-radius: 20px;
+}
+.table-wrap .table { margin: 0; min-width: 640px; }
+.table-wrap:focus-visible { outline: 2px solid #A7F3D0; outline-offset: 3px; }
+
+/* Hamburger toggle: hidden on desktop, green glass on phones. */
+.nav-toggle { display: none; }
+
+@media (max-width: 700px) {
+  /* Sticky compact sidebar header: brand + toggle stay reachable
+     after scrolling; the nav list and footer are hidden until the
+     toggle opens them (sidebar carries .nav-open, see App.jsx). */
+  .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-head { display: flex; align-items: center; gap: 0.75rem; }
+  .sidebar-head .brand { flex: 1; padding: 0; border-bottom: none; }
+  .sidebar-head .brand-sub { display: none; }
+  .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem 0.7rem;
+    font-size: 1.15rem;
+    line-height: 1;
+    color: #F2F7F3;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 12px;
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+  .nav-toggle:hover { background: rgba(110, 231, 183, 0.14); }
+  .sidebar:not(.nav-open) .nav,
+  .sidebar:not(.nav-open) .sidebar-footer { display: none; }
+  /* Open menu taller than a short landscape viewport still stays
+     reachable: the sidebar itself scrolls rather than trapping its
+     footer below the fold. */
+  .sidebar.nav-open { max-height: 100vh; max-height: 100dvh; overflow-y: auto; }
+  .sidebar.nav-open .nav { margin-top: 0.75rem; }
+  .sidebar.nav-open .sidebar-footer { margin-top: 0.75rem; }
+  .nav-link.active::before { left: -1rem; }
+
+  /* Page never scrolls sideways: wide content scrolls inside its
+     own .table-wrap / chart container instead. */
+  .main { overflow-x: hidden; padding: 1.25rem 1rem; }
+  .content { min-width: 0; }
+
+  /* Forms stack to one usable column; 16px fields so phones do not
+     zoom the viewport on focus; buttons meet a 44px touch target. */
+  .form-grid { grid-template-columns: 1fr; }
+  input, select { font-size: 1rem; }
+  .btn { min-height: 44px; padding: 0.7rem 1.1rem; }
+  .btn-sm { min-height: 40px; }
+  .card { padding: 1.25rem 1rem; }
+  .filter-row { flex-direction: column; align-items: stretch; }
+  .filter-row > label { flex: 1 1 auto; }
+  .export-row { width: 100%; }
+  .review-box input { flex: 1 1 120px; width: auto; }
+
+  /* Cards + charts stack; stat cards stay two-up where they fit. */
+  .stat-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .chart-grid { grid-template-columns: 1fr; }
+
+  /* Tables scroll inside .table-wrap; the old whole-page scroll path
+     (.main overflow-x) no longer needs to carry them. */
+  .table-wrap .table { min-width: 600px; }
+}
+
+@media (max-width: 420px) {
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .login-card { padding: 1.5rem 1.25rem; }
+  h1 { font-size: 1.45rem; }
+}

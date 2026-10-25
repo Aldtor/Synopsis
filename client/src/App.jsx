@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { getUser, clearAuth } from './api.js'
 import Login from './pages/Login.jsx'
@@ -15,10 +15,34 @@ function RequireAuth({ children }) {
   return children
 }
 
+// LOGIN FIRST-RENDER FIX — do not inline the auth check in App.
+// App itself is NOT a router context consumer, so its function body
+// only runs on its own renders, not on navigation. The old code read
+// getUser() once in App and baked the result into the /login route
+// element (`user ? <Navigate to="/" /> : <Login />`). After logout,
+// clearAuth() + navigate('/login') never re-ran App, so /login still
+// rendered the stale <Navigate to="/" />, while RequireAuth (which
+// reads fresh) sent "/" straight back to /login — a redirect loop
+// rendering nothing but the fixed aurora glow, until a reload
+// re-ran App. Reading getUser() HERE, inside a component that Routes
+// renders on every location change, makes the decision fresh on
+// every navigation, in both directions, with no spinner involved.
+function LoginRoute() {
+  const user = getUser()
+  if (user) return <Navigate to="/" replace />
+  return <Login />
+}
+
 function Layout({ children }) {
   const user = getUser()
   const navigate = useNavigate()
   const location = useLocation()
+  // Mobile navigation: collapsed behind a hamburger toggle (see CSS:
+  // .nav-toggle is hidden on desktop, nav/footer hidden on phones
+  // unless the sidebar carries .nav-open). Closed on every route
+  // change so a tapped link never leaves the menu covering content.
+  const [navOpen, setNavOpen] = useState(false)
+  useEffect(() => { setNavOpen(false) }, [location.pathname])
 
   const links = [
     { to: '/', label: 'Dashboard' },
@@ -36,14 +60,26 @@ function Layout({ children }) {
 
   return (
     <div className="layout">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-title">FMS</div>
-          <div className="brand-sub">Faculty Management<br />BIAS, Bhimtal</div>
+      <aside className={`sidebar${navOpen ? ' nav-open' : ''}`}>
+        <div className="sidebar-head">
+          <div className="brand">
+            <div className="brand-title">FMS</div>
+            <div className="brand-sub">Faculty Management<br />BIAS, Bhimtal</div>
+          </div>
+          <button
+            type="button"
+            className="nav-toggle"
+            aria-expanded={navOpen}
+            aria-controls="primary-nav"
+            aria-label={navOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            onClick={() => setNavOpen((open) => !open)}
+          >
+            {navOpen ? '✕' : '☰'}
+          </button>
         </div>
-        <nav className="nav">
+        <nav className="nav" id="primary-nav">
           {links.map((l) => (
-            <Link key={l.to} to={l.to} className={location.pathname === l.to ? 'nav-link active' : 'nav-link'}>
+            <Link key={l.to} to={l.to} className={location.pathname === l.to ? 'nav-link active' : 'nav-link'} onClick={() => setNavOpen(false)}>
               {l.label}
             </Link>
           ))}
@@ -64,7 +100,6 @@ function Layout({ children }) {
 }
 
 export default function App() {
-  const user = getUser()
   return (
     <>
       {/* Plasma/aurora backdrop: fixed CSS blobs, animated with transform/opacity only. */}
@@ -75,7 +110,7 @@ export default function App() {
         <div className="aurora-blob aurora-blob-4" />
       </div>
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/login" element={<LoginRoute />} />
       <Route path="/" element={<RequireAuth><Layout><Dashboard /></Layout></RequireAuth>} />
       <Route path="/faculty" element={<RequireAuth><Layout><Faculty /></Layout></RequireAuth>} />
       <Route path="/departments" element={<RequireAuth><Layout><Departments /></Layout></RequireAuth>} />

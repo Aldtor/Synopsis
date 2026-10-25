@@ -111,7 +111,7 @@ export default function Faculty() {
       )}
       {!isAdmin && error && <div className="alert error">{error}</div>}
       {loading ? <div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading…</span></div> : (
-        <table className="table">
+        <div className="table-wrap"><table className="table">
           <thead>
             <tr><th>Faculty ID</th><th>Name</th><th>Department</th><th>Designation</th><th>Qualification</th><th>Subjects</th>{isAdmin && <th></th>}</tr>
           </thead>
@@ -139,7 +139,7 @@ export default function Faculty() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
     </div>
   )

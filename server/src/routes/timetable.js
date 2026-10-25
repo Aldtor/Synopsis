@@ -1,8 +1,11 @@
 import express from 'express';
 import Timetable from '../models/Timetable.js';
 import ConflictLog from '../models/ConflictLog.js';
+import Department from '../models/Department.js';
+import Faculty from '../models/Faculty.js';
 import { protect, requireRole } from '../middleware/auth.js';
 import { findConflicts, describeConflict, logBlockedAttempt, toMinutes } from '../utils/conflict.js';
+import { buildSchedule, validateBatch } from '../utils/generate.js';
 import { friendlyValidationMessage } from '../utils/validation.js';
 
 const router = express.Router();
@@ -55,6 +58,130 @@ async function validateAndCheck(req, res, entry, excludeId) {
   }
   return null;
 }
+
+// ---- Auto timetable generation (admin / HOD only) ----
+// Bounded to one department + semester + section per run (max 30
+// candidates with the default Mon–Fri x 6-slot grid), so it stays fast
+// under Vercel serverless time limits. Preview NEVER writes; confirm
+// saves exactly the previewed payload, re-validated against the live DB.
+// HODs may only generate for their own department.
+
+// Shared validation for both generation endpoints.
+async function generationContext(req, res) {
+  const { department, semester, section = 'A' } = req.body || {};
+  if (!department) return { error: res.status(400).json({ message: 'department is required' }) };
+  const sem = Number(semester);
+  if (!Number.isInteger(sem) || sem < 1 || sem > 8) {
+    return { error: res.status(400).json({ message: 'semester must be an integer between 1 and 8' }) };
+  }
+  if (req.user.role === 'hod' && String(req.user.department) !== String(department)) {
+    return { error: res.status(403).json({ message: 'HODs may only generate timetables for their own department' }) };
+  }
+  const dept = await Department.findById(department);
+  if (!dept) return { error: res.status(404).json({ message: 'Department not found' }) };
+  const facultyDocs = await Faculty.find({ department })
+    .populate('user', 'name')
+    .sort({ facultyId: 1 })
+    .lean();
+  return {
+    department: String(dept._id),
+    departmentName: dept.name,
+    departmentCode: dept.code,
+    semester: sem,
+    section: String(section || 'A'),
+    facultyList: facultyDocs.map((f) => ({
+      _id: String(f._id),
+      facultyId: f.facultyId,
+      name: f.user ? f.user.name : '',
+      subjects: f.subjects || [],
+    })),
+  };
+}
+
+// POST /api/timetable/generate-preview — no writes.
+router.post('/generate-preview', requireRole('admin', 'hod'), async (req, res) => {
+  try {
+    const ctx = await generationContext(req, res);
+    if (ctx.error) return ctx.error;
+    const existing = await Timetable.find({}).lean();
+    const { entries, skipped } = buildSchedule({
+      facultyList: ctx.facultyList,
+      existing: existing.map((e) => ({
+        ...e,
+        department: String(e.department),
+        faculty: String(e.faculty),
+      })),
+      department: ctx.department,
+      semester: ctx.semester,
+      section: ctx.section,
+    });
+    res.json({
+      department: ctx.department,
+      departmentName: ctx.departmentName,
+      departmentCode: ctx.departmentCode,
+      semester: ctx.semester,
+      section: ctx.section,
+      entries,
+      skipped,
+      generatedCount: entries.length,
+      skippedCount: skipped.length,
+    });
+  } catch (err) {
+    res.status(400).json({ message: friendlyValidationMessage(err) });
+  }
+});
+
+// POST /api/timetable/generate-confirm — saves exactly the previewed
+// payload (body: { department, semester, section, entries: [...] }).
+// Every entry is re-validated against current DB state and against
+// earlier entries in the same batch; conflicting entries are dropped
+// with a reason, never inserted.
+router.post('/generate-confirm', requireRole('admin', 'hod'), async (req, res) => {
+  try {
+    const ctx = await generationContext(req, res);
+    if (ctx.error) return ctx.error;
+    const entries = Array.isArray(req.body.entries) ? req.body.entries : null;
+    if (!entries || entries.length === 0 || entries.length > 60) {
+      return res.status(400).json({ message: 'entries must be a non-empty array of at most 60 previewed entries' });
+    }
+    const facultyById = new Map(ctx.facultyList.map((f) => [f._id, f]));
+    for (const e of entries) {
+      if (
+        String(e.department) !== ctx.department ||
+        Number(e.semester) !== ctx.semester ||
+        String(e.section || 'A') !== ctx.section ||
+        !facultyById.has(String(e.faculty?._id ?? e.faculty))
+      ) {
+        return res.status(400).json({ message: 'Every entry must match the previewed department, semester and section, and its faculty must belong to that department' });
+      }
+      if (toMinutes(e.endTime) <= toMinutes(e.startTime)) {
+        return res.status(400).json({ message: 'endTime must be after startTime for every entry' });
+      }
+    }
+    const existing = await Timetable.find({}).lean();
+    const { accepted, skipped } = validateBatch({ entries, existing });
+    let saved = [];
+    if (accepted.length > 0) {
+      const docs = await Timetable.insertMany(
+        accepted.map((e) => ({
+          day: e.day,
+          subject: e.subject,
+          faculty: e.faculty,
+          classroom: e.classroom,
+          startTime: e.startTime,
+          endTime: e.endTime,
+          department: ctx.department,
+          semester: ctx.semester,
+          section: ctx.section,
+        }))
+      );
+      saved = await populate(Timetable.find({ _id: { $in: docs.map((d) => d._id) } }).sort({ day: 1, startTime: 1 }));
+    }
+    res.status(201).json({ saved, savedCount: saved.length, skipped, skippedCount: skipped.length });
+  } catch (err) {
+    res.status(400).json({ message: friendlyValidationMessage(err) });
+  }
+});
 
 router.post('/', requireRole('admin', 'hod'), async (req, res) => {
   try {

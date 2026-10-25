@@ -245,6 +245,17 @@ Verified results (QA-signed, zero defects):
 - Leave apply → admin approve workflow verified
 - Frontend production build (`vite build`) passes
 
+### Testing metrics (measured live, 2026-10-25)
+
+| Test | Attempts | Correct | Rate |
+|---|---|---|---|
+| Clean timetable saves (should save) | 10 | 10 saved (201) | False positives: 0/10 (0%) |
+| Overlapping saves, same faculty or classroom (should block) | 10 | 10 blocked (409) | False negatives: 0/10 (0%) |
+| Mean/median response | — | Clean save 1,667 / 1,615 ms; blocked save 1,000 / 1,002 ms | — |
+
+- Cleanup verified 2026-10-25: all test entries deleted, timetable back to 240 entries, zero test entries remaining, dashboard 40 faculty / 5 departments / 240 entries.
+- Note: the first login during the test took 71 s, a Vercel serverless cold-start artifact (the same call later took ~1.2 s) — it is not typical login latency and is not headlined above. Conflicts-prevented rose 2 → 12 during the test because each blocked attempt leaves an audit-log row, which is by design.
+
 ## Team
 
 **Team FUSION** — Birla Institute of Applied Sciences (BIAS), Bhimtal

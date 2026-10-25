@@ -94,7 +94,7 @@ export default function Leave() {
       {loading ? <div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading…</span></div> : rows.length === 0 ? (
         <div className="empty-state"><p>No leave requests found.</p></div>
       ) : (
-        <table className="table">
+        <div className="table-wrap"><table className="table">
           <thead>
             <tr><th>Faculty</th><th>Type</th><th>From</th><th>To</th><th>Reason</th><th>Status</th><th>Remarks</th>{canReview && <th>Review</th>}</tr>
           </thead>
@@ -126,7 +126,7 @@ export default function Leave() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
     </div>
   )

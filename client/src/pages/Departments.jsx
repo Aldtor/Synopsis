@@ -73,7 +73,7 @@ export default function Departments() {
         </form>
       )}
       {loading ? <div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading…</span></div> : (
-        <table className="table">
+        <div className="table-wrap"><table className="table">
           <thead>
             <tr><th>Name</th><th>Code</th><th>HOD</th><th>Faculty Count</th>{isAdmin && <th></th>}</tr>
           </thead>
@@ -99,7 +99,7 @@ export default function Departments() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
       {!isAdmin && error && <div className="alert error">{error}</div>}
     </div>
