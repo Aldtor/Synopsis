@@ -2,16 +2,19 @@
 // Vercel serverless): CSV via Blob download, PDF via jsPDF with a real
 // file download — no print dialog, no popup window.
 import { jsPDF } from 'jspdf'
+import { localDateString } from './time.js'
 
 function csvCell(value) {
   const s = value === null || value === undefined ? '' : String(value)
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+  // Quote when the cell contains a comma, quote, newline OR carriage
+  // return: a bare \r would otherwise corrupt the row on some parsers.
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
 }
 
 // columns: [{ key, label }]; rows: plain objects. Downloads a .csv file.
 export function exportCSV(filename, columns, rows) {
   const header = columns.map((c) => csvCell(c.label)).join(',')
-  const lines = rows.map((r) => columns.map((c) => csvCell(r[c.key])).join(','))
+  const lines = rows.map((r) => columns.map((c) => csvCell(r[c.key] ?? '—')).join(','))
   const blob = new Blob([[header, ...lines].join('\r\n')], { type: 'text/csv;charset=utf-8' })
   triggerDownload(URL.createObjectURL(blob), filename)
 }
@@ -50,7 +53,9 @@ export function exportPDF(title, filename, columns, rows) {
     doc.setTextColor('#D1FAE5')
     let x = margin
     columns.forEach((c, i) => {
-      doc.text(c.label, x + pad, y + 14, { maxWidth: widths[i] - pad * 2 })
+      // Wrap header labels like body cells: a long label used to
+      // overflow its column (doc.text with maxWidth only clips).
+      doc.text(doc.splitTextToSize(c.label, widths[i] - pad * 2), x + pad, y + 14)
       x += widths[i]
     })
     y += 22
@@ -61,7 +66,9 @@ export function exportPDF(title, filename, columns, rows) {
   doc.setFontSize(fontSize)
   rows.forEach((r, rowIdx) => {
     const cells = columns.map((c, i) => {
-      const text = r[c.key] === null || r[c.key] === undefined ? '' : String(r[c.key])
+      // Guard missing fields with '—' so e.g. a missing semester never
+      // renders as the literal string "undefined".
+      const text = r[c.key] === null || r[c.key] === undefined ? '—' : String(r[c.key])
       return doc.splitTextToSize(text, widths[i] - pad * 2)
     })
     const rowH = Math.max(...cells.map((c) => c.length)) * lineH + pad * 2
@@ -102,5 +109,6 @@ function triggerDownload(url, filename) {
 }
 
 export function fileStamp() {
-  return new Date().toISOString().slice(0, 10)
+  // Local date, not UTC: see localDateString in utils/time.js.
+  return localDateString()
 }

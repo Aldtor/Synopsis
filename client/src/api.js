@@ -44,11 +44,18 @@ export async function api(path, { method = 'GET', body, token } = {}) {
   const headers = { 'Content-Type': 'application/json' }
   const t = token !== undefined ? token : getToken()
   if (t) headers.Authorization = `Bearer ${t}`
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined
-  })
+  let res
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined
+    })
+  } catch {
+    // Network/DNS/server-down: fetch rejects, so there is no response
+    // to read. Surface one plain message instead of a TypeError.
+    throw new Error('Could not reach the server. Check your connection and try again.')
+  }
   let data = null
   try {
     data = await res.json()
@@ -56,6 +63,26 @@ export async function api(path, { method = 'GET', body, token } = {}) {
     data = null
   }
   if (!res.ok) {
+    if (res.status === 401) {
+      // Expired/invalid token recovery (auth F14, frontend part): the
+      // stored session is no longer valid, so drop it and send the
+      // user back to /login. window.location.assign is used
+      // deliberately here instead of react-router navigation: api.js
+      // is imported by every page, and importing the router (or a
+      // navigate hook, which cannot run outside a component) would
+      // create a circular import. A full navigation also guarantees
+      // no component keeps rendering with the stale stored user.
+      // Two exceptions: the login call itself (a 401 there means
+      // "invalid email or password" and must surface as a form error,
+      // not a redirect that would wipe it), and when already on
+      // /login (avoids a reload loop).
+      const isLoginCall = path.startsWith('/auth/login')
+      const alreadyOnLogin = typeof window !== 'undefined' && window.location.pathname === '/login'
+      if (!isLoginCall && !alreadyOnLogin) {
+        clearAuth()
+        window.location.assign('/login')
+      }
+    }
     const err = new Error(friendlyErrorMessage((data && data.message) || `Request failed (${res.status})`))
     err.status = res.status
     err.data = data

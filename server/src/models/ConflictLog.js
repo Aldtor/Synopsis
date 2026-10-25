@@ -13,6 +13,10 @@ const conflictLogSchema = new mongoose.Schema(
     endTime: { type: String, required: true },
     conflictsWith: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Timetable' }],
     reason: { type: String, required: true },
+    // Where the blocked attempt came from. 'generator' rows are drops
+    // from generate-confirm; the dashboard conflictsPrevented metric
+    // counts ALL rows (manual + generator) by design.
+    source: { type: String, enum: ['manual', 'generator'], default: 'manual' },
     attemptedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   },
   { timestamps: true }

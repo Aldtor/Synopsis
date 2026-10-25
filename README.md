@@ -17,11 +17,22 @@ See the [Screenshots](#screenshots) section below for the green liquid-glass the
 - **Leave workflow** — Faculty apply for leave; admins and HODs review (approve/reject) requests.
 - **Automated timetable conflict detection** — The headline feature (see below). Conflicting entries are rejected with a clear explanation instead of silently overwriting a schedule.
 - **Conflict log** — Every blocked timetable attempt is recorded and viewable by admins and HODs.
-- **Dashboard summary** — At-a-glance counts: faculty, departments, timetable entries, pending leave requests, conflicts prevented, and today's attendance.
+- **Dashboard summary** — At-a-glance counts: faculty, departments, timetable entries, pending leave requests, conflicts prevented, and faculty present today.
 - **Role-based access control (RBAC)** — Three roles (`admin`, `hod`, `faculty`), enforced server-side and reflected in the UI, which gates forms by role.
-- **JWT authentication** — Login returns a JSON Web Token, sent as a `Bearer` token on subsequent requests. Passwords are hashed with bcryptjs.
+- **JWT authentication** — Login returns a JSON Web Token, sent as a `Bearer` token on subsequent requests. Default token expiry is 1 day (`JWT_EXPIRES_IN` overrides it). Passwords are hashed with bcryptjs.
 - **Premium liquid-glass UI** — Frosted-glass panels, an animated plasma/aurora gradient background, gradient headings, and glowing buttons.
   - *Honest note: the visual polish was verified by code review and a successful production build, not by a live-browser screenshot pass.*
+
+
+## Phase A additions
+
+- **Auto timetable generation with preview + confirm** — Generate a Mon–Fri × 6-slot timetable for one department + semester + section, preview it without writing anything, then confirm exactly that payload (re-validated against the live database at confirm time; conflicting entries are dropped with a reason, never inserted). Confirm is capped at 30 entries, matching the preview grid.
+  - `POST /api/timetable/generate-preview` — no writes; returns `entries`, `skipped`, and `leaveWarnings`.
+  - `POST /api/timetable/generate-confirm` — saves the previewed entries; returns `saved`, `skipped`, and `leaveWarnings`.
+  - **Generation leave warnings are WARNING-ONLY, not leave-aware:** `leaveWarnings` lists faculty in the department with an Approved leave overlapping [today, today+14 days]. Dated leaves do not map 1:1 onto weekday timetable slots, so nobody is excluded from generation on the basis of a warning, and manual timetable writes are unchanged by leave status.
+- **Dashboard charts** — `GET /api/dashboard/charts` returns the 14-day attendance trend (present vs absent, bucketed by IST calendar date) plus faculty and timetable counts per department. HOD dashboard scoping: in `/api/dashboard/summary`, `pendingLeaves`, `todayPresent`, `conflictsPrevented` and `recentConflicts` are scoped to the HOD's own department (via that department's faculty ids), matching `/charts`; a faculty user gets a single own-department entry for `facultyByDepartment`/`timetableByDepartment`. Admins keep the global view.
+- **CSV/PDF export for attendance and timetable** — client-side export (no server round-trip) via `client/src/utils/export.js` (`exportCSV` / `exportPDF`).
+- **Conflicts metric includes generator drops:** the dashboard `conflictsPrevented` count counts every blocked attempt logged in the conflict log — manual blocks and generate-confirm drops (logged with `source: 'generator'`) alike.
 
 ## Screenshots
 
@@ -49,7 +60,7 @@ A new entry is **blocked** when, on the **same day**, its time interval **overla
 - A blocked entry returns **HTTP 409** with a `conflicts` array of human-readable detail strings. Example detail from a real test:
   > `faculty FAC001 is already teaching and classroom SPOT-1 is already booked on Saturday 09:00-10:00 (Leader Spotcheck)`
 - The blocked entry is **NOT saved**.
-- The blocked attempt is **logged** (see `GET /api/timetable/conflicts-log`) and **counted on the dashboard** as `conflictsPrevented`.
+- The blocked attempt is **logged** (see `GET /api/timetable/conflicts-log`) and **counted on the dashboard** as `conflictsPrevented`. Generate-confirm drops are logged the same way (with `source: 'generator'`) and counted in the same metric.
 - An entry whose `endTime` is not after its `startTime` is rejected with HTTP 400.
 
 ## Tech stack
@@ -101,7 +112,7 @@ The server runs on port `5000` by default (`PORT` in `server/.env` overrides it)
 **Database behaviour:**
 
 - If `MONGODB_URI` is set in `server/.env`, the server connects to that MongoDB (for example, a hosted MongoDB such as Atlas, supplied via this option).
-- If `MONGODB_URI` is **not** set, the server starts an in-memory MongoDB automatically and **auto-seeds demo data** on first start. In this mode, data **resets on restart**.
+- If `MONGODB_URI` is **not** set, the server starts an in-memory MongoDB automatically and **ensures the demo data** on every start. In this mode only (no database configured), data **resets on restart**; with a real database, the seed ensure only adds missing rows and never wipes existing data.
 
 To configure the server, copy the example file and edit it (never commit a real `.env`):
 
@@ -135,7 +146,7 @@ npm run build
 
 For deployment, set `VITE_API_URL` to the hosted backend's API base URL (see `client/.env.example`); when left empty, the `/api` proxy is used.
 
-## Demo data (auto-seeded on first server start)
+## Demo data (ensured on every server start)
 
 - **5 departments:** CSE, ECE, EE, ME, CE
 - **1 admin** account
@@ -144,6 +155,8 @@ For deployment, set `VITE_API_URL` to the hosted backend's API base URL (see `cl
 - **200 attendance rows**
 - **240 timetable entries**
 - **8 sample leave requests**
+
+Seed ensure semantics: the seed runs on every server start, adds only missing rows (keyed on unique fields — departments by code, users by email, faculty by facultyId), and never deletes or overwrites existing data. Attendance, leave and timetable demo rows are filled only when their collection is empty, so a partially deleted demo set (for example timetable 240 → 239) is **not** refilled — see the known limitation in the seed source. Only the no-database in-memory fallback resets on restart.
 
 ## Demo accounts
 
@@ -167,7 +180,7 @@ Base URL (development): `http://localhost:5000/api`. All endpoints except `GET /
 |---|---|---|---|
 | GET | `/api/health` | Public | Health check, returns `{ status: "ok" }` |
 | POST | `/api/auth/login` | Public | Log in, receive a JWT |
-| POST | `/api/auth/register` | Admin | Register a new user |
+| POST | `/api/auth/register` | Admin | Register a new user (admin/HOD accounts; faculty accounts must be created via `POST /api/faculty`) |
 | GET | `/api/auth/me` | Authenticated | Current user profile |
 | GET | `/api/departments` | Authenticated | List departments |
 | POST | `/api/departments` | Admin | Create a department |
@@ -188,7 +201,10 @@ Base URL (development): `http://localhost:5000/api`. All endpoints except `GET /
 | POST | `/api/timetable` | Admin, HOD | Create a timetable entry (conflict-checked; 201 on success, 409 if blocked) |
 | PUT | `/api/timetable/:id` | Admin, HOD | Update a timetable entry (conflict-checked) |
 | DELETE | `/api/timetable/:id` | Admin, HOD | Delete a timetable entry |
-| GET | `/api/dashboard/summary` | Authenticated | Dashboard counts (`facultyCount`, `deptCount`, `timetableCount`, `pendingLeaves`, `conflictsPrevented`, today's attendance) |
+| GET | `/api/dashboard/summary` | Authenticated | Dashboard counts (`facultyCount`, `deptCount`, `timetableCount`, `pendingLeaves`, `conflictsPrevented`, faculty present today; HOD-scoped as described in Phase A additions) |
+| GET | `/api/dashboard/charts` | Authenticated | Dashboard charts: 14-day attendance trend and per-department counts (HOD: own department; faculty: single own-department entry) |
+| POST | `/api/timetable/generate-preview` | Admin, HOD | Preview an auto-generated timetable (no writes) plus leave warnings |
+| POST | `/api/timetable/generate-confirm` | Admin, HOD | Save a previewed timetable (max 30 entries; conflicts dropped and logged) |
 
 ## Folder structure
 
@@ -204,7 +220,8 @@ faculty-management-system/
 │       ├── App.jsx             # Routes: /, /faculty, /departments, /attendance, /leaves, /timetable, /login
 │       ├── App.css             # Liquid-glass styling
 │       ├── api.js              # API client (VITE_API_URL or /api fallback, Bearer token handling)
-│       ├── components/         # (directory present; no component files yet)
+│       ├── components/         # Charts.jsx (dashboard charts), RequireRole.jsx
+│       ├── utils/              # export.js (CSV/PDF export), time.js
 │       └── pages/
 │           ├── Dashboard.jsx
 │           ├── Faculty.jsx
@@ -240,7 +257,12 @@ faculty-management-system/
         │   ├── timetable.js    # Conflict-checked create/update, conflicts-log
         │   └── dashboard.js
         └── utils/
-            └── conflict.js     # Half-open interval overlap, findConflicts, describeConflict, logBlockedAttempt
+            ├── conflict.js     # Half-open interval overlap, findConflicts, describeConflict, logBlockedAttempt
+            ├── generate.js     # Auto timetable generation (buildSchedule) and batch re-validation (validateBatch)
+            ├── validation.js   # Friendly validation messages, generic error mapping, classroom/faculty normalisation
+            ├── dates.js        # IST (Asia/Kolkata) day boundaries for dashboard/attendance/charts
+            ├── jwtSecret.js    # JWT secret handling (fails fast in production without JWT_SECRET; no shipped fallback)
+            └── rateLimit.js    # In-memory login + global rate limiters (no new dependency)
 ```
 
 > Note: `node_modules/`, `client/dist/`, and `.env` files are not part of the source tree — they are generated or local-only and are excluded by `.gitignore`.

@@ -33,6 +33,19 @@ function LoginRoute() {
   return <Login />
 }
 
+// Replaces the old silent `* → /` redirect: an unknown URL now says so
+// and links home, instead of quietly landing the user on the dashboard
+// with no explanation of where their link went.
+function NotFound() {
+  return (
+    <div className="content">
+      <h1>Page not found</h1>
+      <p className="muted">That page does not exist.</p>
+      <p><Link to="/">Go to the dashboard</Link></p>
+    </div>
+  )
+}
+
 function Layout({ children }) {
   const user = getUser()
   const navigate = useNavigate()
@@ -117,7 +130,7 @@ export default function App() {
       <Route path="/attendance" element={<RequireAuth><Layout><Attendance /></Layout></RequireAuth>} />
       <Route path="/leaves" element={<RequireAuth><Layout><Leave /></Layout></RequireAuth>} />
       <Route path="/timetable" element={<RequireAuth><Layout><Timetable /></Layout></RequireAuth>} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
     </>
   )

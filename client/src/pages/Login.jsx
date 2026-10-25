@@ -20,7 +20,10 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
-      const data = await api('/auth/login', { method: 'POST', body: { email, password } })
+      // Trim the email only: a pasted address with surrounding spaces
+      // used to fail login. The password is never altered — the server
+      // compares it exactly as typed.
+      const data = await api('/auth/login', { method: 'POST', body: { email: email.trim(), password } })
       saveAuth(data.token, data.user)
       navigate('/')
     } catch (err) {

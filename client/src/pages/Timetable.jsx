@@ -6,6 +6,16 @@ import { normalizeTime, timeToMinutes } from '../utils/time.js'
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const EMPTY = { day: 'Monday', subject: '', faculty: '', classroom: '', startTime: '', endTime: '', department: '', semester: '', section: '' }
 
+// Semester must be a whole number from 1 to 8. Plain message, checked
+// client-side before either the manual add/edit or the generator
+// preview, and always sent to the server as a number, never a string.
+function semesterError(value) {
+  if (!/^\d+$/.test(String(value).trim())) return 'Semester must be a whole number between 1 and 8.'
+  const n = Number(value)
+  if (n < 1 || n > 8) return 'Semester must be a whole number between 1 and 8.'
+  return ''
+}
+
 export default function Timetable() {
   const user = getUser()
   const canManage = user && (user.role === 'admin' || user.role === 'hod')
@@ -22,10 +32,15 @@ export default function Timetable() {
   const [facultyLoading, setFacultyLoading] = useState(true)
   const [deptsLoading, setDeptsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [search, setSearch] = useState('')
+  const [exportError, setExportError] = useState('')
   // Two-step in-app delete confirmation (see Faculty.jsx): first click
   // arms the row's button, second click fires the DELETE call. No
   // native browser confirm dialog, which auto-dismisses in automated browsers.
   const [pendingDelete, setPendingDelete] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
   // Auto timetable generation: preview first (no writes), then confirm.
   const [genDept, setGenDept] = useState('')
   const [genSem, setGenSem] = useState('')
@@ -44,21 +59,51 @@ export default function Timetable() {
     { key: 'department', label: 'Department', width: 2 },
     { key: 'semester', label: 'Sem / Sec', width: 1 },
   ]
-  const timetableExportRows = rows.map((r) => ({
+
+  const q = search.trim().toLowerCase()
+  const filteredRows = q
+    ? rows.filter((r) =>
+        (r.subject || '').toLowerCase().includes(q)
+        || (r.faculty && r.faculty.user ? r.faculty.user.name : '').toLowerCase().includes(q)
+        || (r.faculty ? r.faculty.facultyId || '' : '').toLowerCase().includes(q)
+        || (r.classroom || '').toLowerCase().includes(q))
+    : rows
+  const timetableExportRows = filteredRows.map((r) => ({
     day: r.day,
     subject: r.subject,
     faculty: r.faculty && r.faculty.user ? `${r.faculty.user.name} (${r.faculty.facultyId})` : '—',
     classroom: r.classroom,
     time: `${r.startTime} – ${r.endTime}`,
     department: r.department ? `${r.department.name} (${r.department.code})` : '—',
-    semester: `${r.semester}${r.section ? ` / ${r.section}` : ''}`,
+    semester: `${r.semester ?? '—'}${r.section ? ` / ${r.section}` : ''}`,
   }))
+
+  function handleExport(kind) {
+    setExportError('')
+    if (filteredRows.length === 0) {
+      // Inline notice instead of a download: no more header-only CSV
+      // and no more "No rows" PDF.
+      setExportError('Nothing to export for this filter.')
+      return
+    }
+    try {
+      if (kind === 'csv') exportCSV(`timetable-${fileStamp()}.csv`, timetableColumns, timetableExportRows)
+      else exportPDF('Timetable', `timetable-${fileStamp()}.pdf`, timetableColumns, timetableExportRows)
+    } catch (err) {
+      setExportError(err.message || 'Export failed. Please try again.')
+    }
+  }
 
   async function handlePreview(e) {
     e.preventDefault()
     setGenError('')
     setGenNotice('')
     setPreview(null)
+    const semErr = semesterError(genSem)
+    if (semErr) {
+      setGenError(semErr)
+      return
+    }
     setGenBusy(true)
     try {
       const data = await api('/timetable/generate-preview', {
@@ -95,9 +140,11 @@ export default function Timetable() {
   }
 
   function load(d) {
+    setError('')
+    setLoadError('')
     setLoading(true)
-    const q = d ? `?day=${d}` : ''
-    api(`/timetable${q}`)
+    const q2 = d ? `?day=${d}` : ''
+    api(`/timetable${q2}`)
       .then(setRows)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
@@ -108,9 +155,8 @@ export default function Timetable() {
     api('/timetable/conflicts-log').then(setBlocked).catch(() => {})
   }
 
-  useEffect(() => {
-    load('')
-    loadBlocked()
+  function loadDropdowns() {
+    setLoadError('')
     setFacultyLoading(true)
     api('/faculty')
       .then(setFaculty)
@@ -121,6 +167,13 @@ export default function Timetable() {
       .then(setDepartments)
       .catch((err) => setLoadError((prev) => prev || `Could not load departments: ${err.message}`))
       .finally(() => setDeptsLoading(false))
+  }
+
+  useEffect(() => {
+    load('')
+    loadBlocked()
+    loadDropdowns()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function changeDay(d) {
@@ -139,7 +192,32 @@ export default function Timetable() {
     }
   }
 
-  async function handleAdd(e) {
+  function startEdit(r) {
+    setError('')
+    setConflicts([])
+    setNotice('')
+    setEditingId(r._id)
+    setForm({
+      day: r.day || 'Monday',
+      subject: r.subject || '',
+      faculty: r.faculty ? r.faculty._id : '',
+      classroom: r.classroom || '',
+      startTime: r.startTime || '',
+      endTime: r.endTime || '',
+      department: r.department ? r.department._id : '',
+      semester: r.semester === null || r.semester === undefined ? '' : String(r.semester),
+      section: r.section || ''
+    })
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setForm(EMPTY)
+    setError('')
+    setConflicts([])
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault()
     setError('')
     setConflicts([])
@@ -158,10 +236,23 @@ export default function Timetable() {
       setError('End time must be after start time.')
       return
     }
+    const semErr = semesterError(form.semester)
+    if (semErr) {
+      setError(semErr)
+      return
+    }
+    setSaving(true)
     try {
-      await api('/timetable', { method: 'POST', body: { ...form, startTime, endTime } })
-      setNotice('Timetable entry added.')
-      setForm(EMPTY)
+      const payload = { ...form, startTime, endTime, semester: Number(form.semester) }
+      if (editingId) {
+        await api(`/timetable/${editingId}`, { method: 'PUT', body: payload })
+        setNotice('Timetable entry updated.')
+        cancelEdit()
+      } else {
+        await api('/timetable', { method: 'POST', body: payload })
+        setNotice('Timetable entry added.')
+        setForm(EMPTY)
+      }
       load(day)
     } catch (err) {
       if (err.status === 409 && err.data && Array.isArray(err.data.conflicts)) {
@@ -173,6 +264,8 @@ export default function Timetable() {
       } else {
         setError(err.message)
       }
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -183,13 +276,17 @@ export default function Timetable() {
       setPendingDelete(id)
       return
     }
-    setPendingDelete(null)
+    // Do NOT clear pendingDelete before the await (see Faculty.jsx).
+    setDeletingId(id)
     try {
       await api(`/timetable/${id}`, { method: 'DELETE' })
       setNotice('Timetable entry deleted.')
       load(day)
     } catch (err) {
       setError(err.message)
+    } finally {
+      setPendingDelete(null)
+      setDeletingId(null)
     }
   }
 
@@ -197,8 +294,8 @@ export default function Timetable() {
     <div>
       <h1>Timetable</h1>
       {canManage && (
-        <form onSubmit={handleAdd} className="form card">
-          <h2>Add Timetable Entry</h2>
+        <form onSubmit={handleSubmit} className="form card">
+          <h2>{editingId ? 'Edit Timetable Entry' : 'Add Timetable Entry'}</h2>
           <div className="form-grid">
             <label>Day
               <select value={form.day} onChange={(e) => setForm({ ...form, day: e.target.value })}>
@@ -223,7 +320,7 @@ export default function Timetable() {
                 partial keystroke and forced segment-by-segment entry.
                 onChange stores keystrokes verbatim (no reformatting,
                 so the caret never jumps); blur normalises "9:30" /
-                "0930" to "09:30"; submit validates (see handleAdd). */}
+                "0930" to "09:30"; submit validates (see handleSubmit). */}
             <label>Start time<input type="text" inputMode="numeric" autoComplete="off" placeholder="09:30" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} onBlur={() => blurTime('startTime')} required /></label>
             <label>End time<input type="text" inputMode="numeric" autoComplete="off" placeholder="09:30" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} onBlur={() => blurTime('endTime')} required /></label>
             <label>Department
@@ -237,7 +334,7 @@ export default function Timetable() {
             <label>Semester<input value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })} required placeholder="5" /></label>
             <label>Section<input value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })} placeholder="A" /></label>
           </div>
-          {loadError && <div className="alert error">{loadError}</div>}
+          {loadError && <div className="alert error">{loadError} <button type="button" className="btn btn-sm" onClick={loadDropdowns}>Retry</button></div>}
           {error && <div className="alert error">{error}</div>}
           {conflicts.length > 0 && (
             <div className="conflict-box">
@@ -252,13 +349,14 @@ export default function Timetable() {
             </div>
           )}
           {notice && <div className="alert success">{notice}</div>}
-          <button className="btn btn-primary">Add Entry</button>
+          <button className="btn btn-primary" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Save Changes' : 'Add Entry'}</button>
+          {editingId && <>{' '}<button type="button" className="btn" onClick={cancelEdit} disabled={saving}>Cancel</button></>}
         </form>
       )}
       {canManage && (
         <form onSubmit={handlePreview} className="form card">
           <h2>Auto-Generate Timetable</h2>
-          <p className="muted small">Pick one department and semester, preview a conflict-free week (Monday–Friday, 09:00–13:00 and 14:00–16:00), then confirm to save. Preview never saves anything; slots that cannot be filled without a conflict are listed as skipped, never forced.</p>
+          <p className="muted small">Pick one department and semester, preview a week with no conflicts at preview time (Monday–Friday, 09:00–13:00 and 14:00–16:00), then confirm to save. Preview never saves anything; slots that cannot be filled without a conflict are listed as skipped, never forced.</p>
           <div className="form-grid">
             <label>Department
               <select value={genDept} onChange={(e) => setGenDept(e.target.value)} required>
@@ -269,6 +367,7 @@ export default function Timetable() {
             <label>Semester<input value={genSem} onChange={(e) => setGenSem(e.target.value)} required placeholder="5" type="number" min="1" max="8" /></label>
             <label>Section<input value={genSection} onChange={(e) => setGenSection(e.target.value)} placeholder="A" /></label>
           </div>
+          {loadError && <div className="alert error">{loadError} <button type="button" className="btn btn-sm" onClick={loadDropdowns}>Retry</button></div>}
           {genError && <div className="alert error">{genError}</div>}
           {genNotice && <div className="alert success">{genNotice}</div>}
           <button className="btn btn-primary" disabled={genBusy}>{genBusy ? 'Working…' : 'Preview'}</button>
@@ -312,45 +411,53 @@ export default function Timetable() {
             {DAYS.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
         </label>
+        <label>Search
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search subject, faculty or classroom" />
+        </label>
         <div className="export-row">
-          <button className="btn btn-primary" onClick={() => exportCSV(`timetable-${fileStamp()}.csv`, timetableColumns, timetableExportRows)}>Export CSV</button>{' '}
-          <button className="btn btn-primary" onClick={() => exportPDF('Timetable', `timetable-${fileStamp()}.pdf`, timetableColumns, timetableExportRows)}>Export PDF</button>
-          <span className="muted small">Exports the rows currently shown{day ? ` (day: ${day})` : ' (all days)'}.</span>
+          <button className="btn btn-primary" disabled={loading} onClick={() => handleExport('csv')}>Export CSV</button>{' '}
+          <button className="btn btn-primary" disabled={loading} onClick={() => handleExport('pdf')}>Export PDF</button>
+          <span className="muted small">Exports the rows currently shown{day ? ` (day: ${day})` : ' (all days)'}{q ? ` matching "${search.trim()}"` : ''}.</span>
         </div>
       </div>
-      {loading ? <div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading…</span></div> : rows.length === 0 ? (
+      {exportError && <div className="alert error">{exportError}</div>}
+      {loading ? <div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading…</span></div> : filteredRows.length === 0 ? (
         <div className="empty-state"><p>No timetable entries found.</p></div>
       ) : (
-        <div className="table-wrap"><table className="table">
-          <thead>
-            <tr><th>Day</th><th>Subject</th><th>Faculty</th><th>Classroom</th><th>Time</th><th>Department</th><th>Sem / Sec</th>{canManage && <th></th>}</tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r._id}>
-                <td>{r.day}</td>
-                <td>{r.subject}</td>
-                <td>{r.faculty && r.faculty.user ? `${r.faculty.user.name} (${r.faculty.facultyId})` : '—'}</td>
-                <td>{r.classroom}</td>
-                <td>{r.startTime} – {r.endTime}</td>
-                <td>{r.department ? `${r.department.name} (${r.department.code})` : '—'}</td>
-                <td>{r.semester}{r.section ? ` / ${r.section}` : ''}</td>
-                {canManage && (
-                  <td>
-                    {pendingDelete === r._id ? (
-                      <>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(r._id)}>Confirm delete?</button>{' '}
-                        <button className="btn btn-sm" onClick={() => setPendingDelete(null)}>Cancel</button>
-                      </>
-                    ) : (
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(r._id)}>Delete</button>
-                    )}
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table></div>
+        <div>
+          <p className="muted small">{filteredRows.length} {filteredRows.length === 1 ? 'entry' : 'entries'}{day ? ` — ${day}` : ' — all days'}{q ? ` matching "${search.trim()}"` : ''}</p>
+          <div className="table-wrap"><table className="table">
+            <thead>
+              <tr><th>Day</th><th>Subject</th><th>Faculty</th><th>Classroom</th><th>Time</th><th>Department</th><th>Sem / Sec</th>{canManage && <th></th>}</tr>
+            </thead>
+            <tbody>
+              {filteredRows.map((r) => (
+                <tr key={r._id}>
+                  <td>{r.day}</td>
+                  <td>{r.subject}</td>
+                  <td>{r.faculty && r.faculty.user ? `${r.faculty.user.name} (${r.faculty.facultyId})` : '—'}</td>
+                  <td>{r.classroom}</td>
+                  <td>{r.startTime} – {r.endTime}</td>
+                  <td>{r.department ? `${r.department.name} (${r.department.code})` : '—'}</td>
+                  <td>{r.semester ?? '—'}{r.section ? ` / ${r.section}` : ''}</td>
+                  {canManage && (
+                    <td>
+                      <button className="btn btn-sm" onClick={() => startEdit(r)}>Edit</button>{' '}
+                      {pendingDelete === r._id ? (
+                        <>
+                          <button className="btn btn-danger btn-sm" onClick={() => handleDelete(r._id)} disabled={deletingId === r._id} aria-label={`Delete ${r.subject}`}>{deletingId === r._id ? 'Deleting…' : 'Confirm delete?'}</button>{' '}
+                          <button className="btn btn-sm" onClick={() => setPendingDelete(null)} disabled={deletingId === r._id}>Cancel</button>
+                        </>
+                      ) : (
+                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(r._id)} aria-label={`Delete ${r.subject}`}>Delete</button>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table></div>
+        </div>
       )}
       {canManage && (
         <div>
@@ -358,24 +465,28 @@ export default function Timetable() {
           {blocked.length === 0 ? (
             <div className="empty-state"><p>No blocked timetable attempts recorded.</p></div>
           ) : (
-            <div className="table-wrap"><table className="table">
-              <thead>
-                <tr><th>Day</th><th>Subject</th><th>Faculty</th><th>Classroom</th><th>Time</th><th>Reason</th><th>Blocked At</th></tr>
-              </thead>
-              <tbody>
-                {blocked.map((b, i) => (
-                  <tr key={i}>
-                    <td>{b.day}</td>
-                    <td>{b.subject}</td>
-                    <td>{b.faculty && b.faculty.user ? b.faculty.user.name : '—'}</td>
-                    <td>{b.classroom}</td>
-                    <td>{b.startTime} – {b.endTime}</td>
-                    <td>{b.reason}</td>
-                    <td>{b.createdAt ? new Date(b.createdAt).toLocaleString() : '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table></div>
+            <div>
+              <p className="muted small">{blocked.length} blocked {blocked.length === 1 ? 'attempt' : 'attempts'}</p>
+              <p className="muted small">Includes test/audit entries.</p>
+              <div className="table-wrap"><table className="table">
+                <thead>
+                  <tr><th>Day</th><th>Subject</th><th>Faculty</th><th>Classroom</th><th>Time</th><th>Reason</th><th>Blocked At</th></tr>
+                </thead>
+                <tbody>
+                  {blocked.map((b, i) => (
+                    <tr key={i}>
+                      <td>{b.day}</td>
+                      <td>{b.subject}</td>
+                      <td>{b.faculty && b.faculty.user ? b.faculty.user.name : '—'}</td>
+                      <td>{b.classroom}</td>
+                      <td>{b.startTime} – {b.endTime}</td>
+                      <td>{b.reason}</td>
+                      <td>{b.createdAt ? new Date(b.createdAt).toLocaleString() : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table></div>
+            </div>
           )}
         </div>
       )}

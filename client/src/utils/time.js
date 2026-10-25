@@ -47,6 +47,15 @@ export function normalizeTime(raw) {
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
 }
 
+// Local calendar date as "YYYY-MM-DD", built from LOCAL parts
+// (getFullYear/getMonth/getDate), never from toISOString(). The UTC
+// form is a day behind for IST between 00:00 and 05:30, which used to
+// make "today" show yesterday's attendance. Shared by Attendance
+// (today's date) and export file stamps.
+export function localDateString(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 export function isValidTime(raw) {
   return normalizeTime(raw) !== null
 }

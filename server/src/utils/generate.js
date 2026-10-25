@@ -12,6 +12,7 @@
 // a conflict is SKIPPED with a reason — never forced.
 
 import { overlaps } from './conflict.js';
+import { normalizeClassroom, normalizeFacultyId } from './validation.js';
 
 export const GENERATOR_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 export const GENERATOR_SLOTS = [
@@ -51,8 +52,8 @@ export function buildSchedule({
     day: e.day,
     startTime: e.startTime,
     endTime: e.endTime,
-    faculty: String(e.faculty?._id ?? e.faculty),
-    classroom: e.classroom,
+    faculty: normalizeFacultyId(e.faculty),
+    classroom: normalizeClassroom(e.classroom),
     // Kept for the already-scheduled check below (not needed for clashes).
     department: e.department !== undefined ? String(e.department?._id ?? e.department) : undefined,
     semester: e.semester,
@@ -98,7 +99,7 @@ export function buildSchedule({
         // Try rooms in order; the first room free for this faculty wins.
         for (const classroom of rooms) {
           const candidate = {
-            day, startTime, endTime, classroom,
+            day, startTime, endTime, classroom: normalizeClassroom(classroom),
             faculty: String(fac._id),
           };
           if (clashesWith(candidate, pool).length === 0 && clashesWith(candidate, entries.map(norm)).length === 0) {
@@ -108,7 +109,7 @@ export function buildSchedule({
               faculty: String(fac._id),
               facultyId: fac.facultyId || '',
               facultyName: fac.name || '',
-              classroom,
+              classroom: normalizeClassroom(classroom),
               startTime,
               endTime,
               department,
@@ -137,18 +138,28 @@ export function buildSchedule({
  * Returns { accepted, skipped } — conflicting entries are dropped with
  * a reason, never inserted. `existing` is re-read from the DB at confirm
  * time, so entries created after the preview are still caught.
+ *
+ * Normalisation (finding 3): accepted entries are stored NORMALISED
+ * (faculty as a plain string id, classroom trimmed + uppercased), the
+ * same way candidates are normalised, and both clash checks compare
+ * normalised-to-normalised. Previously an accepted entry kept a
+ * populated faculty object, so String(object) never matched the next
+ * candidate's id and a same-faculty clash inside the batch slipped
+ * through. Skipped entries carry conflictsWith (DB entry ids, where
+ * known) so the caller can audit-log generator drops.
  */
 export function validateBatch({ entries = [], existing = [] }) {
   const accepted = [];
   const skipped = [];
   const pool = existing.map((e) => ({
+    _id: e._id,
     day: e.day, startTime: e.startTime, endTime: e.endTime,
-    faculty: String(e.faculty?._id ?? e.faculty), classroom: e.classroom,
+    faculty: normalizeFacultyId(e.faculty), classroom: normalizeClassroom(e.classroom),
   }));
   for (const raw of entries) {
     const candidate = {
       day: raw.day, startTime: raw.startTime, endTime: raw.endTime,
-      faculty: String(raw.faculty?._id ?? raw.faculty), classroom: raw.classroom,
+      faculty: normalizeFacultyId(raw.faculty), classroom: normalizeClassroom(raw.classroom),
     };
     const clashes = pool.filter(
       (e) =>
@@ -160,15 +171,20 @@ export function validateBatch({ entries = [], existing = [] }) {
       (e) =>
         e.day === candidate.day &&
         overlaps(candidate.startTime, candidate.endTime, e.startTime, e.endTime) &&
-        (String(e.faculty) === candidate.faculty || e.classroom === candidate.classroom)
+        (e.faculty === candidate.faculty || e.classroom === candidate.classroom)
     );
     if (clashes.length > 0 || batchClashes.length > 0) {
       skipped.push({
         ...raw,
+        faculty: candidate.faculty,
+        classroom: candidate.classroom,
+        conflictsWith: clashes.map((c) => c._id).filter(Boolean),
         reason: 'Conflict with an existing entry (or an earlier entry in this batch) — not saved',
       });
     } else {
-      accepted.push(raw);
+      // Store the normalised form, so the next iteration's batch check
+      // compares normalised-to-normalised (see header comment).
+      accepted.push({ ...raw, faculty: candidate.faculty, classroom: candidate.classroom });
     }
   }
   return { accepted, skipped };

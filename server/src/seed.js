@@ -56,16 +56,34 @@ const facultyEmailFor = (i) => `faculty${String(i + 1).padStart(2, '0')}@bias.ac
 //    (departments by code, users by email, faculty by facultyId);
 //  - fills attendance / timetable / leaves only when their collection
 //    is empty, so a partial run heals itself on the next start;
+//  - hashes the demo password ONLY when users are actually missing
+//    (finding 12: no wasted bcrypt work on a complete database);
+//  - tolerates duplicate-key errors on insertMany (finding 12): two
+//    concurrent cold starts can both see an empty collection and both
+//    try to insert; the unique indexes reject the second copy and the
+//    second run logs a warning and continues with the first run's rows
+//    instead of crashing startup;
+//  - KNOWN LIMITATION (finding 12, documented not fixed): partial
+//    deletion is NOT healed — e.g. timetable 240 -> 239 is never
+//    repaired, because seed rows have no stable natural key that would
+//    distinguish a deliberately deleted row from a missing seed row,
+//    and regenerating them (random shuffle) could add duplicates or
+//    conflicts. Refilling them safely would need a deterministic seed
+//    key per row; that is a future change, not attempted here.
 //  - is a fast no-op (a handful of reads) when the data is complete,
 //    so it is safe to run on every server start.
 export async function seed() {
-  const hash = await bcrypt.hash(PASSWORD, 10);
 
   // --- Departments, keyed by code ---
   const deptByCode = new Map((await Department.find()).map((d) => [d.code, d]));
   const missingDepts = DEPARTMENTS.filter((d) => !deptByCode.has(d.code));
   if (missingDepts.length > 0) {
-    await Department.insertMany(missingDepts.map((d) => ({ ...d, hod: null })));
+    try {
+      await Department.insertMany(missingDepts.map((d) => ({ ...d, hod: null })));
+    } catch (e) {
+      if (e.code !== 11000) throw e;
+      console.warn('Seed departments: duplicate-key (concurrent cold start) — continuing with existing rows');
+    }
     for (const d of await Department.find({ code: { $in: missingDepts.map((x) => x.code) } })) {
       deptByCode.set(d.code, d);
     }
@@ -90,7 +108,14 @@ export async function seed() {
   const userByEmail = new Map((await User.find()).map((u) => [u.email, u]));
   const missingUsers = userSpecs.filter((u) => !userByEmail.has(u.email));
   if (missingUsers.length > 0) {
-    await User.insertMany(missingUsers.map((u) => ({ ...u, password: hash })));
+    // Bcrypt work happens only here, when users are actually missing.
+    const hash = await bcrypt.hash(PASSWORD, 10);
+    try {
+      await User.insertMany(missingUsers.map((u) => ({ ...u, password: hash })));
+    } catch (e) {
+      if (e.code !== 11000) throw e;
+      console.warn('Seed users: duplicate-key (concurrent cold start) — continuing with existing rows');
+    }
     for (const u of await User.find({ email: { $in: missingUsers.map((x) => x.email) } })) {
       userByEmail.set(u.email, u);
     }
@@ -129,7 +154,12 @@ export async function seed() {
   const facultyById = new Map((await Faculty.find()).map((f) => [f.facultyId, f]));
   const missingFaculty = facultySpecs.filter((f) => !facultyById.has(f.facultyId));
   if (missingFaculty.length > 0) {
-    await Faculty.insertMany(missingFaculty);
+    try {
+      await Faculty.insertMany(missingFaculty);
+    } catch (e) {
+      if (e.code !== 11000) throw e;
+      console.warn('Seed faculty: duplicate-key (concurrent cold start) — continuing with existing rows');
+    }
   }
   // Generated rows (attendance / leaves / timetable) are built from the
   // demo profiles only, so user-created faculty never inflate them.
@@ -142,7 +172,14 @@ export async function seed() {
     const d = new Date();
     while (days.length < 5) {
       d.setDate(d.getDate() - 1);
-      if (d.getDay() !== 0 && d.getDay() !== 6) days.push(new Date(d));
+      if (d.getDay() !== 0 && d.getDay() !== 6) {
+        // Normalised to UTC midnight (finding 13): seed attendance rows
+        // carry a date, not a seeding-time timestamp, so IST day
+        // bucketing (UTC midnight = 05:30 IST, same IST date) is stable.
+        const day = new Date(d);
+        day.setUTCHours(0, 0, 0, 0);
+        days.push(day);
+      }
     }
     const attendanceRows = [];
     for (const fac of facultyDocs) {
@@ -156,7 +193,12 @@ export async function seed() {
         });
       }
     }
-    await Attendance.insertMany(attendanceRows);
+    try {
+      await Attendance.insertMany(attendanceRows);
+    } catch (e) {
+      if (e.code !== 11000) throw e;
+      console.warn('Seed attendance: duplicate-key (concurrent cold start) — continuing with existing rows');
+    }
   }
 
   // --- Leaves: fill only when empty (8 sample rows) ---
@@ -171,7 +213,8 @@ export async function seed() {
       { type: 'Other', status: 'Pending', off: 8 },
       { type: 'Sick', status: 'Rejected', off: -12 },
     ];
-    await Leave.insertMany(
+    try {
+      await Leave.insertMany(
       leaveSamples.map((s, i) => {
         const from = new Date();
         from.setDate(from.getDate() + s.off);
@@ -187,7 +230,11 @@ export async function seed() {
           reviewedBy: s.status === 'Pending' ? null : admin._id,
         };
       })
-    );
+      );
+    } catch (e) {
+      if (e.code !== 11000) throw e;
+      console.warn('Seed leaves: duplicate-key (concurrent cold start) — continuing with existing rows');
+    }
   }
 
   // --- Timetable: fill only when empty (240 entries), conflict-free
@@ -219,7 +266,12 @@ export async function seed() {
         });
       }
     }
-    await Timetable.insertMany(entries);
+    try {
+      await Timetable.insertMany(entries);
+    } catch (e) {
+      if (e.code !== 11000) throw e;
+      console.warn('Seed timetable: duplicate-key (concurrent cold start) — continuing with existing rows');
+    }
   }
 
   const counts = {

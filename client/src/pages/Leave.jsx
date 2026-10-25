@@ -14,8 +14,17 @@ export default function Leave() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(true)
+  const [applying, setApplying] = useState(false)
+  // Review in flight, by leave id: both buttons for that row disable
+  // while the PUT runs.
+  const [reviewingId, setReviewingId] = useState(null)
+  // Two-step reject confirmation, mirroring the delete pattern: first
+  // click arms ("Confirm reject?" + Cancel), second click fires the
+  // PUT. Reject is irreversible, so it no longer fires on one click.
+  const [pendingReject, setPendingReject] = useState(null)
 
   function load(status) {
+    setError('')
     setLoading(true)
     const q = status ? `?status=${status}` : ''
     api(`/leaves${q}`)
@@ -35,25 +44,49 @@ export default function Leave() {
     e.preventDefault()
     setError('')
     setNotice('')
+    // Client-side date-order check (the server also enforces it).
+    if (form.fromDate && form.toDate && form.toDate < form.fromDate) {
+      setError('To date must be on or after the from date.')
+      return
+    }
+    setApplying(true)
     try {
       await api('/leaves', { method: 'POST', body: form })
       setForm(EMPTY)
       setNotice('Leave application submitted.')
-      load(filter)
+      // Reset the filter to "All" and reload under it: a new
+      // application is Pending, so under an "Approved"/"Rejected"
+      // filter it would otherwise be invisible after submitting.
+      setFilter('')
+      load('')
     } catch (err) {
       setError(err.message)
+    } finally {
+      setApplying(false)
     }
   }
 
   async function handleReview(id, status) {
     setError('')
+    setReviewingId(id)
     try {
       await api(`/leaves/${id}/review`, { method: 'PUT', body: { status, remarks: remarks[id] || '' } })
       setNotice(`Leave ${status.toLowerCase()}.`)
+      setPendingReject(null)
       load(filter)
     } catch (err) {
       setError(err.message)
+    } finally {
+      setReviewingId(null)
     }
+  }
+
+  function handleRejectClick(id) {
+    if (pendingReject !== id) {
+      setPendingReject(id)
+      return
+    }
+    handleReview(id, 'Rejected')
   }
 
   return (
@@ -78,7 +111,7 @@ export default function Leave() {
           </div>
           {error && <div className="alert error">{error}</div>}
           {notice && <div className="alert success">{notice}</div>}
-          <button className="btn btn-primary">Submit Application</button>
+          <button className="btn btn-primary" disabled={applying}>{applying ? 'Saving…' : 'Submit Application'}</button>
         </form>
       )}
       <div className="filter-row">
@@ -94,39 +127,49 @@ export default function Leave() {
       {loading ? <div className="loading" role="status" aria-live="polite"><span className="spinner" aria-hidden="true" /><span>Loading…</span></div> : rows.length === 0 ? (
         <div className="empty-state"><p>No leave requests found.</p></div>
       ) : (
-        <div className="table-wrap"><table className="table">
-          <thead>
-            <tr><th>Faculty</th><th>Type</th><th>From</th><th>To</th><th>Reason</th><th>Status</th><th>Remarks</th>{canReview && <th>Review</th>}</tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r._id}>
-                <td>{r.faculty && r.faculty.user ? `${r.faculty.user.name} (${r.faculty.facultyId})` : '—'}</td>
-                <td>{r.type}</td>
-                <td>{r.fromDate ? r.fromDate.slice(0, 10) : '—'}</td>
-                <td>{r.toDate ? r.toDate.slice(0, 10) : '—'}</td>
-                <td>{r.reason}</td>
-                <td><span className={`badge badge-${(r.status || '').toLowerCase()}`}>{r.status}</span></td>
-                <td>{r.remarks || '—'}</td>
-                {canReview && (
-                  <td>
-                    {r.status === 'Pending' ? (
-                      <div className="review-box">
-                        <input
-                          placeholder="Remarks"
-                          value={remarks[r._id] || ''}
-                          onChange={(e) => setRemarks({ ...remarks, [r._id]: e.target.value })}
-                        />
-                        <button className="btn btn-primary btn-sm" onClick={() => handleReview(r._id, 'Approved')}>Approve</button>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleReview(r._id, 'Rejected')}>Reject</button>
-                      </div>
-                    ) : '—'}
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table></div>
+        <div>
+          <p className="muted small">{rows.length} leave {rows.length === 1 ? 'request' : 'requests'}{filter ? ` — ${filter}` : ' — all statuses'}</p>
+          <div className="table-wrap"><table className="table">
+            <thead>
+              <tr><th>Faculty</th><th>Type</th><th>From</th><th>To</th><th>Reason</th><th>Status</th><th>Remarks</th>{canReview && <th>Review</th>}</tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r._id}>
+                  <td>{r.faculty && r.faculty.user ? `${r.faculty.user.name} (${r.faculty.facultyId})` : '—'}</td>
+                  <td>{r.type}</td>
+                  <td>{r.fromDate ? r.fromDate.slice(0, 10) : '—'}</td>
+                  <td>{r.toDate ? r.toDate.slice(0, 10) : '—'}</td>
+                  <td>{r.reason}</td>
+                  <td><span className={`badge badge-${(r.status || '').toLowerCase()}`}>{r.status}</span></td>
+                  <td>{r.remarks || '—'}</td>
+                  {canReview && (
+                    <td>
+                      {r.status === 'Pending' ? (
+                        <div className="review-box">
+                          <input
+                            placeholder="Remarks"
+                            value={remarks[r._id] || ''}
+                            onChange={(e) => setRemarks({ ...remarks, [r._id]: e.target.value })}
+                          />
+                          <button className="btn btn-primary btn-sm" disabled={reviewingId === r._id} onClick={() => handleReview(r._id, 'Approved')}>{reviewingId === r._id ? 'Working…' : 'Approve'}</button>
+                          {pendingReject === r._id ? (
+                            <>
+                              <button className="btn btn-danger btn-sm" disabled={reviewingId === r._id} onClick={() => handleRejectClick(r._id)}>{reviewingId === r._id ? 'Working…' : 'Confirm reject?'}</button>
+                              <button className="btn btn-sm" disabled={reviewingId === r._id} onClick={() => setPendingReject(null)}>Cancel</button>
+                            </>
+                          ) : (
+                            <button className="btn btn-danger btn-sm" disabled={reviewingId === r._id} onClick={() => handleRejectClick(r._id)}>Reject</button>
+                          )}
+                        </div>
+                      ) : '—'}
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table></div>
+        </div>
       )}
     </div>
   )

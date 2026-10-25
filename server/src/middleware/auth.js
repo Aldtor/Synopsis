@@ -1,12 +1,13 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { getJwtSecret } from '../utils/jwtSecret.js';
 
 export async function protect(req, res, next) {
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
   if (!token) return res.status(401).json({ message: 'Not authorized, no token' });
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'change-this-secret-in-production');
+    const decoded = jwt.verify(token, getJwtSecret());
     const user = await User.findById(decoded.id).select('-password');
     if (!user || !user.active) return res.status(401).json({ message: 'Not authorized' });
     req.user = user;
