@@ -112,7 +112,9 @@ The server runs on port `5000` by default (`PORT` in `server/.env` overrides it)
 **Database behaviour:**
 
 - If `MONGODB_URI` is set in `server/.env`, the server connects to that MongoDB (for example, a hosted MongoDB such as Atlas, supplied via this option).
-- If `MONGODB_URI` is **not** set, the server starts an in-memory MongoDB automatically and **ensures the demo data** on every start. In this mode only (no database configured), data **resets on restart**; with a real database, the seed ensure only adds missing rows and never wipes existing data.
+- If `MONGODB_URI` is **not** set, the server starts an in-memory MongoDB automatically. In non-production mode it ensures demo data on each start, and that in-memory data resets on restart.
+- With a real MongoDB, non-production seed runs add only missing demo rows and never wipe existing data.
+- Production/Vercel deployments skip demo seeding. Provision production accounts separately with unique passwords.
 
 To configure the server, copy the example file and edit it (never commit a real `.env`):
 
@@ -146,7 +148,7 @@ npm run build
 
 For deployment, set `VITE_API_URL` to the hosted backend's API base URL (see `client/.env.example`); when left empty, the `/api` proxy is used.
 
-## Demo data (ensured on every server start)
+## Demo data (local development only)
 
 - **5 departments:** CSE, ECE, EE, ME, CE
 - **1 admin** account
@@ -160,7 +162,9 @@ Seed ensure semantics: the seed runs on every server start, adds only missing ro
 
 ## Demo accounts
 
-The password for **all** demo accounts is:
+These demo accounts and their shared password are for local development only. Production/Vercel startup does not seed them, and production login rejects the demo password for every account.
+
+The password for **all** local demo accounts is:
 
 ```
 password123
@@ -171,6 +175,8 @@ password123
 | `admin@bias.ac.in` | admin |
 | `hod.cse@bias.ac.in` | HOD, CSE |
 | `faculty01@bias.ac.in` | faculty |
+
+**Existing production databases:** this change does not delete previously seeded records. Before deploying it, rotate passwords for any existing demo accounts through a trusted out-of-band database or account-provisioning process. Production login will reject the shared demo password after deployment; do not reuse it.
 
 ## API endpoints
 
