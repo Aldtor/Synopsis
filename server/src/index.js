@@ -53,12 +53,8 @@ if (process.env.NODE_ENV !== 'test') {
   // Only the HTTP listener is local-only — a Vercel serverless function
   // must never call app.listen(); Vercel invokes the exported app itself.
   await connectDB();
-  // Always run the idempotent, non-destructive seed ensure: it fills any
-  // gaps left by a timed-out partial run and is a fast no-op (a handful
-  // of reads) when the demo data is already complete. It never wipes
-  // existing data, so a partial live database heals on the next start
-  // instead of being stuck forever (the old "only when User count is 0"
-  // trigger never retried after a partial run).
+  // Keep local demo data self-healing, but never run demo seeding in
+  // production/Vercel; seed() enforces that guard for every caller.
   await seed();
   if (!process.env.VERCEL) {
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
