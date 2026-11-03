@@ -4,7 +4,8 @@ import User from '../models/User.js';
 import Faculty from '../models/Faculty.js';
 import Department from '../models/Department.js';
 import { protect, requireRole } from '../middleware/auth.js';
-import { getJwtSecret } from '../utils/jwtSecret.js';
+import { getJwtSecret, isProductionDeployment } from '../utils/jwtSecret.js';
+import { DEMO_PASSWORD } from '../utils/demoCredentials.js';
 import { loginLimiter } from '../utils/rateLimit.js';
 import { handleRouteError } from '../utils/validation.js';
 
@@ -21,6 +22,12 @@ const signToken = (id) =>
 router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
+    // Existing deployments may already contain seeded users. Reject the
+    // public demo password for every production account, even before those
+    // records have been rotated out of band.
+    if (isProductionDeployment() && password === DEMO_PASSWORD) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
     const user = await User.findOne({ email }).select('+password').populate('department', 'name code');
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ message: 'Invalid email or password' });
