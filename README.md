@@ -158,7 +158,7 @@ For deployment, set `VITE_API_URL` to the hosted backend's API base URL (see `cl
 - **240 timetable entries**
 - **8 sample leave requests**
 
-Seed ensure semantics: the seed runs on every server start, adds only missing rows (keyed on unique fields — departments by code, users by email, faculty by facultyId), and never deletes or overwrites existing data. Attendance, leave and timetable demo rows are filled only when their collection is empty, so a partially deleted demo set (for example timetable 240 → 239) is **not** refilled — see the known limitation in the seed source. Only the no-database in-memory fallback resets on restart.
+In local development, the seed runs on every server start and adds only missing rows (keyed on unique fields — departments by code, users by email, faculty by facultyId), never deleting or overwriting existing data. Production/Vercel exits before reading or writing demo records. Attendance, leave and timetable demo rows are filled only when their collection is empty, so a partially deleted local demo set (for example timetable 240 → 239) is **not** refilled — see the known limitation in the seed source. Only the no-database in-memory fallback resets on restart.
 
 ## Demo accounts
 
