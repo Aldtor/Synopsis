@@ -8,8 +8,8 @@ import Faculty from './models/Faculty.js';
 import Attendance from './models/Attendance.js';
 import Leave from './models/Leave.js';
 import Timetable from './models/Timetable.js';
-
-const PASSWORD = 'password123';
+import { DEMO_PASSWORD } from './utils/demoCredentials.js';
+import { isProductionDeployment } from './utils/jwtSecret.js';
 
 const DEPARTMENTS = [
   { name: 'Computer Science and Engineering', code: 'CSE' },
@@ -73,6 +73,12 @@ const facultyEmailFor = (i) => `faculty${String(i + 1).padStart(2, '0')}@bias.ac
 //  - is a fast no-op (a handful of reads) when the data is complete,
 //    so it is safe to run on every server start.
 export async function seed() {
+  // Demo records use a public, shared password. Never create or repair them
+  // in production, including when this function is run directly as a script.
+  if (isProductionDeployment()) {
+    console.warn('Demo seeding is disabled in production; provision production accounts separately.');
+    return null;
+  }
 
   // --- Departments, keyed by code ---
   const deptByCode = new Map((await Department.find()).map((d) => [d.code, d]));
@@ -109,7 +115,7 @@ export async function seed() {
   const missingUsers = userSpecs.filter((u) => !userByEmail.has(u.email));
   if (missingUsers.length > 0) {
     // Bcrypt work happens only here, when users are actually missing.
-    const hash = await bcrypt.hash(PASSWORD, 10);
+    const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
     try {
       await User.insertMany(missingUsers.map((u) => ({ ...u, password: hash })));
     } catch (e) {
